@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-//Attach to any object that spawns bullets.
+//Attach to whatever is in charge of compiling the patterns when the game/level starts
 
-public class BulletSpawner : NotifiableObj, iTickable
+public class PatternCompiler : NotifiableObj, iTickable
 {
     /// <summary>
     /// The list of commands/actions that the program reads.
@@ -137,8 +137,7 @@ public class BulletSpawner : NotifiableObj, iTickable
                 }
                 catch(System.Exception e)
                 {
-                    //Report the error message along with the line number in the file where it occured
-                    Global.LogReport($"Error on line {lineNum}\n\n" + e.ToString());
+                    ThrowError(e.ToString(), lineNum);
                 }
             }
 
@@ -206,4 +205,15 @@ public class BulletSpawner : NotifiableObj, iTickable
     #endregion //action struct
 
     #endregion //compiler
+
+    /// <summary>
+    /// Logs a report of an error with the pattern file to the console.
+    /// </summary>
+    /// <param name="error">The string representation of the error.</param>
+    /// <param name="line">The line on the pattern file where the error occured.</param>
+    private void ThrowError(string error, int line)
+    {
+        //Report the error message along with the line number in the file where it occured
+        Global.LogReport($"Error on line {line}\n\n" + error.ToString());
+    }
 }

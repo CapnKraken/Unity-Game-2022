@@ -9,8 +9,8 @@ Shoot 0
 //Done soon
 
 
-Wait 1
-Shoot 0
-Shoot 0
+	Wait 1
+	Shoot 0
+	Shoot 0
 
 Wait 10

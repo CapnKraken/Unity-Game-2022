@@ -5,6 +5,14 @@ Bullet pattern system
 	
 	Have global class which stores the compiled pattern files. When an enemy is spawned, it can grab the one it needs from that
 
+	IMPLEMENTATION:
+		Commands: always "action value action value" since they're all numbers. The actions will be ints
+		repeats: Stack of objects storing the repeat count and the line it began at
+		when the program reaches a repeat, push a repeat object to the stack
+		when it reaches the end repeat, pop, decrement
+			if > 0, push back and return to the start line
+			if it's 0, leave it off
+
 	Input file- 1 command per line
 	Output (read by program)
 		Array of actions stored as strings
