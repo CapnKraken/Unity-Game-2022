@@ -1,16 +1,17 @@
-//Start program
+// Start program
 
 Wait 5
-Shoot 0
+Shoot
 
 Wait 0.5
-Shoot 0
+Shoot
 
-//Done soon
+// Done soon
 
-
+repeat 3
 	Wait 1
-	Shoot 0
-	Shoot 0
+	Shoot
+endrepeat
+
 
 Wait 10

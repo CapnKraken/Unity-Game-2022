@@ -7,6 +7,8 @@ using UnityEngine;
 
 //Attach to whatever is in charge of compiling the patterns when the game/level starts
 
+//Eventually, move the thing that runs the compiled pattern to a seperate component
+
 public class PatternCompiler : NotifiableObj, iTickable
 {
     /// <summary>
@@ -20,9 +22,24 @@ public class PatternCompiler : NotifiableObj, iTickable
     private int waitTimer;
 
     /// <summary>
-    /// The variable that iterates through the action list.
+    /// The variable that iterates through the action list. <br/>
+    /// Use it to tell you which line the program is on.
     /// </summary>
     private int actionIterator;
+
+    private Stack<Repeater> repeaterStack;
+    /// <summary>
+    /// Struct to store 2 ints: A repeat counter and a line number representing where to jump back to.
+    /// </summary>
+    private struct Repeater
+    {
+        public int repeats, lineNumber;
+        public Repeater(int repeats, int lineNumber)
+        {
+            this.repeats = repeats;
+            this.lineNumber = lineNumber;
+        }
+    }
 
     public void Tick()
     {
@@ -55,7 +72,34 @@ public class PatternCompiler : NotifiableObj, iTickable
             case 1: //SHOOT
                 Notify(Category.Shooting, "Shoot");
                 break;
-            default: break;
+            case 2: //REPEAT
+                {
+                    //Add a new repeater struct to the stack
+                    Repeater temp1 = new Repeater((int)action.splitAction[1], actionIterator);
+                    repeaterStack.Push(temp1);
+
+                    Global.LogReport($"Repeating {temp1.repeats} times.");
+                    break;
+                }
+            case 3: //ENDREPEAT
+                {
+                    Repeater temp2 = repeaterStack.Pop();
+                    temp2.repeats--;
+
+                    //if r.repeats == 0, then the program will continue
+                    if (temp2.repeats > 0)
+                    {
+                        //Set the actionIterator to point to the start of the repeat
+                        actionIterator = temp2.lineNumber;
+
+                        Global.LogReport($"Repeating {temp2.repeats} more times.");
+
+                        //push it back onto the stack
+                        repeaterStack.Push(temp2);
+                    }
+                    break;
+                }
+            default:break;
         }
     }
 
@@ -66,9 +110,12 @@ public class PatternCompiler : NotifiableObj, iTickable
 
         Compile("Pattern.txt");
 
-        //initialize variables
+        //Initialize variables
         waitTimer = 0;
         actionIterator = 0;
+
+        //Initialize data structures
+        repeaterStack = new Stack<Repeater>();
     }
 
     protected override void DeInitialize()
@@ -111,10 +158,20 @@ public class PatternCompiler : NotifiableObj, iTickable
                 {
                     //Read a line from the file and split it.
                     string line = sr.ReadLine();
+                    line = line.Trim();
+                    Global.LogReport(line);
+
                     string[] splitLine = line.Split(' ');
 
                     //get the ID of the initial action
                     int actionID = ActionStringToInt(splitLine[0]);
+
+                    //Throw a compile error if the command isn't recognized
+                    if (actionID == -2)
+                    {
+                        ThrowError("Compile error. Check file.", lineNum);
+                        break;
+                    }
 
                     //-1 is the ignore ID. For comments, empty lines, etc.
                     if (actionID != -1)
@@ -165,11 +222,15 @@ public class PatternCompiler : NotifiableObj, iTickable
     /// </summary>
     private int ActionStringToInt(string actionString)
     {
-        switch (actionString)
+        switch (actionString.ToLower())
         {
-            case "Wait": return 0;
-            case "Shoot": return 1;
-            default: return -1; //Comment or empty line. Signal to ignore
+            case "wait": return 0;
+            case "shoot": return 1;
+            case "repeat": return 2;
+            case "endrepeat": return 3;
+            case "//": return -1;//Comment or empty line. Signal to ignore
+            case "": return -1;
+            default: return -2; //Error, unrecognized thing
         }
     }
 
