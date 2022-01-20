@@ -1,0 +1,34 @@
+Input management
+Camera Control system
+
+Bullet pattern system
+	
+	Have global class which stores the compiled pattern files. When an enemy is spawned, it can grab the one it needs from that
+
+	Input file- 1 command per line
+	Output (read by program)
+		Array of actions stored as strings
+		for instance:
+			"0 4.6" is equal to "Wait 4.6" in the file
+		
+	Reading
+		Timer variable, ticks down per frame if greater than 0
+		If timer == 0, do action at current index, otherwise, hold on
+			split string
+		If index == length, set index to 0
+
+	SYSTEM REQUIREMENTS
+		I want to be able to not have to type in every number every time I call the shoot command
+			//Something like
+			Shoot Burst 4 Speed 10
+			Wait 0.2
+			Shoot Speed 15
+
+			//This would shoot a 4-burst with speed of 10, wait .2 seconds, then shoot a 4-burst with speed of 15
+
+
+Things to talk about in devlog
+-Camera controller
+-Collision circles
+-Pattern system beginnings
+	
