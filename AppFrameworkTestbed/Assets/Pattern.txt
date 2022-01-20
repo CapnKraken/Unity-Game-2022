@@ -14,3 +14,10 @@ Shoot 0
 Shoot 0
 
 Wait 10
+
+//Ok, so how am I to do this?
+
+Wait 15
+Shoot 0
+Shoot 0
+Wait 12
