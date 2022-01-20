@@ -39,4 +39,7 @@ Things to talk about in devlog
 -Camera controller
 -Collision circles
 -Pattern system beginnings
+	commands
+	wait
+	repeat
 	
