@@ -1,17 +1,20 @@
-// Start program
+log starting
 
-Wait 5
-Shoot
+wait 2
+shoot
+shoot
+wait 2
 
-Wait 0.5
-Shoot
+repeat 2
+wait 5
+shoot
 
-// Done soon
+wait 3
 
-repeat 3
-	Wait 1
-	Shoot
+repeat 4
+shoot
+wait .1
+endrepeat
 endrepeat
 
-
-Wait 10
+log ending

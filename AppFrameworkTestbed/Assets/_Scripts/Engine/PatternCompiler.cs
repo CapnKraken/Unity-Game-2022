@@ -41,16 +41,28 @@ public class PatternCompiler : NotifiableObj, iTickable
         }
     }
 
+    /// <summary>
+    /// What the bullet script uses to debug log.
+    /// </summary>
+    private List<string> logs;
+
     public void Tick()
     {
+        if (patternData.Count == 0) return;
+
         if(waitTimer == 0)
         {
-            //Execute the action
-            DoAction(patternData[actionIterator]);
-            actionIterator++;
+            //In a dowhile so it can run multiple commands per frame, if there's no wait in between
+            do
+            {
+                //Execute the action
+                DoAction(patternData[actionIterator]);
+                actionIterator++;
 
-            //Wrap actionIterator if it exceeds the list length
-            if (actionIterator >= patternData.Count) actionIterator = 0;
+                //Wrap actionIterator if it exceeds the list length
+                if (actionIterator >= patternData.Count) actionIterator = 0;
+            }
+            while (waitTimer == 0);
         }
         else
         {
@@ -59,6 +71,9 @@ public class PatternCompiler : NotifiableObj, iTickable
         }
     }
 
+    /// <summary>
+    /// Perform an action.
+    /// </summary>
     private void DoAction(Action action)
     {
         //First number in splitAction should be an int
@@ -70,7 +85,8 @@ public class PatternCompiler : NotifiableObj, iTickable
                 waitTimer = (int)(action.splitAction[1] * 60);
                 break;
             case 1: //SHOOT
-                Notify(Category.Shooting, "Shoot");
+                //Notify(Category.Shooting, "Shoot");
+                Global.LogReport("Shooting");
                 break;
             case 2: //REPEAT
                 {
@@ -99,6 +115,11 @@ public class PatternCompiler : NotifiableObj, iTickable
                     }
                     break;
                 }
+            case 4:
+                {
+                    Global.LogReport(logs[(int)action.splitAction[1]]);
+                }
+                break;
             default:break;
         }
     }
@@ -142,6 +163,7 @@ public class PatternCompiler : NotifiableObj, iTickable
     private void Compile(string filePath)
     {
         patternData = new List<Action>();
+        logs = new List<string>();
 
         //Check if the file exists.
         if (File.Exists(Application.dataPath + "/" + filePath))
@@ -159,9 +181,22 @@ public class PatternCompiler : NotifiableObj, iTickable
                     //Read a line from the file and split it.
                     string line = sr.ReadLine();
                     line = line.Trim();
-                    Global.LogReport(line);
 
                     string[] splitLine = line.Split(' ');
+
+                    //Ignore sections of code
+                    if(splitLine[0] == "IGNORE")
+                    {
+                        do
+                        {
+                            lineNum++;
+                            line = sr.ReadLine();
+                            line = line.Trim();
+
+                            splitLine = line.Split(' ');
+                        } 
+                        while (splitLine[0] != "ENDIGNORE");
+                    }
 
                     //get the ID of the initial action
                     int actionID = ActionStringToInt(splitLine[0]);
@@ -171,10 +206,16 @@ public class PatternCompiler : NotifiableObj, iTickable
                     {
                         ThrowError("Compile error. Check file.", lineNum);
                         break;
-                    }
+                    } 
+                    else if(actionID == 4) //add logging data to the logs list
+                    {
+                        //current length of logs list is the index we'll find the log in
+                        patternData.Add(new Action(new List<float>(){actionID, logs.Count}));
 
-                    //-1 is the ignore ID. For comments, empty lines, etc.
-                    if (actionID != -1)
+                        //substring is to remove "log" from the log
+                        logs.Add(line.Substring(3));
+                    }
+                    else if (actionID != -1) //-1 is the ignore ID. For comments, empty lines, etc.
                     {
                         List<float> parsedLine = new List<float>();
 
@@ -228,8 +269,10 @@ public class PatternCompiler : NotifiableObj, iTickable
             case "shoot": return 1;
             case "repeat": return 2;
             case "endrepeat": return 3;
+            case "log": return 4;
             case "//": return -1;//Comment or empty line. Signal to ignore
             case "": return -1;
+            case "endignore": return -1;
             default: return -2; //Error, unrecognized thing
         }
     }
