@@ -35,11 +35,4 @@ Bullet pattern system
 			//This would shoot a 4-burst with speed of 10, wait .2 seconds, then shoot a 4-burst with speed of 15
 
 
-Things to talk about in devlog
--Camera controller
--Collision circles
--Pattern system beginnings
-	commands
-	wait
-	repeat
 	
