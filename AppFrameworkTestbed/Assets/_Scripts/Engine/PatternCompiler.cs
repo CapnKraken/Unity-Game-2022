@@ -42,6 +42,11 @@ public class PatternCompiler : NotifiableObj, iTickable
     }
 
     /// <summary>
+    /// The list to store the clusters(methods)
+    /// </summary>
+    private List<List<Action>> clusterList;
+
+    /// <summary>
     /// What the bullet script uses to debug log.
     /// </summary>
     private List<string> logs;
@@ -165,6 +170,11 @@ public class PatternCompiler : NotifiableObj, iTickable
         patternData = new List<Action>();
         logs = new List<string>();
 
+        clusterList = new List<List<Action>>();
+
+        //Create temporary dictionary to store cluster information
+        Dictionary<string, int> clusters = new Dictionary<string, int>();
+
         //Check if the file exists.
         if (File.Exists(Application.dataPath + "/" + filePath))
         {
@@ -270,6 +280,7 @@ public class PatternCompiler : NotifiableObj, iTickable
             case "repeat": return 2;
             case "endrepeat": return 3;
             case "log": return 4;
+            case "call": return 5;
             case "//": return -1;//Comment or empty line. Signal to ignore
             case "": return -1;
             case "endignore": return -1;
@@ -304,8 +315,8 @@ public class PatternCompiler : NotifiableObj, iTickable
             return s;
         }
     }
-        
-        
+
+
     #endregion //action struct
 
     #endregion //compiler

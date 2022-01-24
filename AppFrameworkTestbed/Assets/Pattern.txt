@@ -1,20 +1,32 @@
 log starting
 
+define Zap
+	repeat 5
+		shoot 1
+		wait 0.2
+		shoot 2
+		wait 0.4
+	endrepeat
+	
+	shoot 5
+endcluster
+
+
 wait 2
 shoot
 shoot
 wait 2
 
 repeat 2
-wait 5
-shoot
+	wait 5
+	call Zap
 
-wait 3
+	wait 3
 
-repeat 4
-shoot
-wait .1
-endrepeat
+	repeat 4
+		shoot
+		wait .1
+	endrepeat
 endrepeat
 
 log ending

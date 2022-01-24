@@ -13,6 +13,27 @@ Bullet pattern system
 			if > 0, push back and return to the start line
 			if it's 0, leave it off
 
+		Functions/Clusters:
+			-list of clusters
+			-compiler encounters a define command
+			-creates a new cluster object, fills it until it hits the end
+			-adds object to cluster list
+			-save cluster name into dictionary- int index is the value
+
+		psuedo:
+			if(command == "define")
+			{
+				new cluster c
+				while command != "endfunc"
+				interpret next line, add it to c
+			}
+
+		if encountered at runtime
+
+		cluster stack, like repeats
+		stores which line to jump back to
+		
+
 	Input file- 1 command per line
 	Output (read by program)
 		Array of actions stored as strings
