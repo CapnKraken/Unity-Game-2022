@@ -16,6 +16,8 @@ public class PatternCompiler : NotifiableObj, iTickable
     /// </summary>
     private List<Action> patternData;
 
+    #region Timer and Iterator
+
     /// <summary>
     /// The program will wait if this is greater than 0.
     /// </summary>
@@ -26,6 +28,10 @@ public class PatternCompiler : NotifiableObj, iTickable
     /// Use it to tell you which line the program is on.
     /// </summary>
     private int actionIterator;
+
+    #endregion
+
+    #region Repeater Stack and Struct
 
     private Stack<Repeater> repeaterStack;
     /// <summary>
@@ -41,16 +47,14 @@ public class PatternCompiler : NotifiableObj, iTickable
         }
     }
 
-    /// <summary>
-    /// The list to store the clusters(methods)
-    /// </summary>
-    private List<List<Action>> clusterList;
+    #endregion
 
     /// <summary>
     /// What the bullet script uses to debug log.
     /// </summary>
     private List<string> logs;
 
+    #region Update
     public void Tick()
     {
         if (patternData.Count == 0) return;
@@ -75,7 +79,9 @@ public class PatternCompiler : NotifiableObj, iTickable
             waitTimer--;
         }
     }
+#endregion
 
+    #region Do Action
     /// <summary>
     /// Perform an action.
     /// </summary>
@@ -129,6 +135,8 @@ public class PatternCompiler : NotifiableObj, iTickable
         }
     }
 
+    #endregion
+
     #region Initialize and Deinitialize
     protected override void Initialize()
     {
@@ -167,13 +175,12 @@ public class PatternCompiler : NotifiableObj, iTickable
 
     private void Compile(string filePath)
     {
+        //Initialize lists
         patternData = new List<Action>();
         logs = new List<string>();
 
-        clusterList = new List<List<Action>>();
-
         //Create temporary dictionary to store cluster information
-        Dictionary<string, int> clusters = new Dictionary<string, int>();
+        Dictionary<string, List<Action>> clusterDictionary = new Dictionary<string, List<Action>>();
 
         //Check if the file exists.
         if (File.Exists(Application.dataPath + "/" + filePath))
@@ -195,7 +202,7 @@ public class PatternCompiler : NotifiableObj, iTickable
                     string[] splitLine = line.Split(' ');
 
                     //Ignore sections of code
-                    if(splitLine[0] == "IGNORE")
+                    if(splitLine[0].ToLower() == "ignore")
                     {
                         do
                         {
@@ -205,43 +212,41 @@ public class PatternCompiler : NotifiableObj, iTickable
 
                             splitLine = line.Split(' ');
                         } 
-                        while (splitLine[0] != "ENDIGNORE");
+                        while (splitLine[0].ToLower() != "endignore");
                     }
 
-                    //get the ID of the initial action
-                    int actionID = ActionStringToInt(splitLine[0]);
-
-                    //Throw a compile error if the command isn't recognized
-                    if (actionID == -2)
+                    if(splitLine[0].ToLower() == "define")
                     {
-                        ThrowError("Compile error. Check file.", lineNum);
-                        break;
-                    } 
-                    else if(actionID == 4) //add logging data to the logs list
-                    {
-                        //current length of logs list is the index we'll find the log in
-                        patternData.Add(new Action(new List<float>(){actionID, logs.Count}));
+                        string clusterName = splitLine[1];
 
-                        //substring is to remove "log" from the log
-                        logs.Add(line.Substring(3));
-                    }
-                    else if (actionID != -1) //-1 is the ignore ID. For comments, empty lines, etc.
-                    {
-                        List<float> parsedLine = new List<float>();
+                        //Add the cluster to the dictionary
+                        clusterDictionary.Add(clusterName, new List<Action>());
 
-                        //Add the main action ID first
-                        parsedLine.Add(actionID);
+                        //Read until it reaches an endcluster command
+                        lineNum++;
+                        line = sr.ReadLine();
+                        line = line.Trim();
 
-                        //Convert to floats
-                        for (int i = 1; i < splitLine.Length; i++)
+                        splitLine = line.Split(' ');
+
+                        while (splitLine[0].ToLower() != "endcluster")
                         {
-                            //Add all of the modifiers
-                            parsedLine.Add(float.Parse(splitLine[i]));
+                            //process the line into the cluster
+                            ProcessLine(splitLine, line, lineNum, clusterDictionary[clusterName], clusterDictionary);
+
+                            lineNum++;
+                            line = sr.ReadLine();
+                            line = line.Trim();
+
+                            splitLine = line.Split(' ');
                         }
 
-                        //Add the action struct
-                        patternData.Add(new Action(parsedLine));
+                        //Log the dictionary entry
+                        Global.LogReport($"Putting cluster {clusterName} in dictionary:\n" + ActionListToString(clusterDictionary[clusterName]));
                     }
+
+                    //process the line
+                    ProcessLine(splitLine, line, lineNum, patternData, clusterDictionary);
                 }
                 catch(System.Exception e)
                 {
@@ -254,17 +259,76 @@ public class PatternCompiler : NotifiableObj, iTickable
 
             #region Compiled file log
             //Log the compiled file
-            string s = "";
-            foreach(Action a in patternData)
-            {
-                s += a.ToString() + "\n";
-            }
+            string s = ActionListToString(patternData);
             Global.LogReport(s);
             #endregion
         }
         else
         {
             Global.LogReport($"File: {Application.dataPath + "/" + filePath} does not exist.");
+        }
+    }
+
+    private string ActionListToString(List<Action> actionList)
+    {
+        string s = "";
+        foreach (Action a in actionList)
+        {
+            s += a.ToString() + "\n";
+        }
+
+        return s;
+    }
+
+    /// <summary>
+    /// Process a single line from the pattern file. <br/>
+    /// This is just to reuse the code twice, but I may change it, as it's kinda bloated.
+    /// </summary>
+    /// <param name="splitLine">The split line</param>
+    /// <param name="line">the entire line</param>
+    /// <param name="lineNum">the current line number</param>
+    /// <param name="actionList">the action list to modify</param>
+    /// <param name="clusterDictionary">the dictionary storing the clusters</param>
+    private void ProcessLine(string[] splitLine, string line, int lineNum, List<Action> actionList, Dictionary<string, List<Action>> clusterDictionary)
+    {
+        //get the ID of the initial action
+        int actionID = ActionStringToInt(splitLine[0]);
+
+        //Throw a compile error if the command isn't recognized
+        if (actionID == -2)
+        {
+            ThrowError("Compile error. Check file.", lineNum);
+            return;
+        }
+        else if (actionID == 4) //add logging data to the logs list
+        {
+            //current length of logs list is the index we'll find the log in
+            actionList.Add(new Action(new List<float>() { actionID, logs.Count }));
+
+            //substring is to remove "log" from the log
+            logs.Add(line.Substring(3));
+        }
+        else if(actionID == 5) //call a cluster
+        {
+            //insert cluster from the dictionary
+            actionList.AddRange(clusterDictionary[splitLine[1]]);
+        }
+        else if (actionID != -1) //-1 is the ignore ID. For comments, empty lines, etc.
+        {
+            List<float> parsedLine = new List<float>();
+
+            //Add the main action ID first
+            parsedLine.Add(actionID);
+
+            //Convert to floats
+            for (int i = 1; i < splitLine.Length; i++)
+            {
+                //Add all of the modifiers
+                parsedLine.Add(float.Parse(splitLine[i]));
+            }
+
+            //Add the action struct
+            actionList.Add(new Action(parsedLine));
         }
     }
 

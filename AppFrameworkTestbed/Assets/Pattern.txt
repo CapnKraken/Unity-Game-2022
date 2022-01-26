@@ -1,5 +1,7 @@
 log starting
 
+// Defining clusters
+
 define Zap
 	repeat 5
 		shoot 1
@@ -11,6 +13,7 @@ define Zap
 	shoot 5
 endcluster
 
+// Start here
 
 wait 2
 shoot
@@ -19,6 +22,8 @@ wait 2
 
 repeat 2
 	wait 5
+
+	log Calling Zap Cluster
 	call Zap
 
 	wait 3
@@ -30,3 +35,36 @@ repeat 2
 endrepeat
 
 log ending
+
+ignore
+
+
+{storage for clusters}
+//length of cluster
+5
+{5 instructions}
+
+{storage for main instructions}
+
+OR
+
+{storage for main instructions}
+//clusters compiled directly into the list of instructions
+
+
+
+So the pattern.txt will look like
+
+{cluster definitions}
+
+{main instructions}
+
+but the compiled list will just be
+
+{instructions}
+
+
+
+
+
+endignore
