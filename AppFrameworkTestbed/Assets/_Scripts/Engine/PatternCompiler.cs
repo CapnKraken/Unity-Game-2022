@@ -241,6 +241,12 @@ public class PatternCompiler : NotifiableObj, iTickable
                             splitLine = line.Split(' ');
                         }
 
+                        lineNum++;
+                        line = sr.ReadLine();
+                        line = line.Trim();
+
+                        splitLine = line.Split(' ');
+
                         //Log the dictionary entry
                         Global.LogReport($"Putting cluster {clusterName} in dictionary:\n" + ActionListToString(clusterDictionary[clusterName]));
                     }
@@ -348,7 +354,7 @@ public class PatternCompiler : NotifiableObj, iTickable
             case "//": return -1;//Comment or empty line. Signal to ignore
             case "": return -1;
             case "endignore": return -1;
-            default: return -2; //Error, unrecognized thing
+            default: Global.LogReport($"String {actionString} not recognized."); return -2; //Error, unrecognized thing
         }
     }
 

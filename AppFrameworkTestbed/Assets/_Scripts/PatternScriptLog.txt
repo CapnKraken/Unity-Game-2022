@@ -1,0 +1,32 @@
+Pattern Scripting Language
+
+Implemented:
+
+	Commands
+		Wait x seconds
+		Shoot (generic command, doesn't do anything, no modifiers)
+
+	Repeating
+	Cluster definition
+
+Not Implemented
+
+	Shoot Modifiers
+		Burst
+		Speed
+		Type
+		Spread
+		Spread Distance
+		Whip
+		Whip Distance
+		Whip Curve
+
+	Cluster definitions
+		Parameters
+
+	Variables
+		Replace numbers
+		Arithmetic
+
+	Include Directive
+		Like in C++, copy another file into the compilation
