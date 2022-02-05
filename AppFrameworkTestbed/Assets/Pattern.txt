@@ -36,7 +36,7 @@ endrepeat
 
 log ending
 
-ignore
+IGNORE
 
 
 {storage for clusters}
@@ -67,4 +67,4 @@ but the compiled list will just be
 
 
 
-endignore
+ENDIGNORE

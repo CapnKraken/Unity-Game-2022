@@ -1,6 +1,17 @@
 Input management
 Camera Control system
 
+Object pool
+	-Queue or stack, doesn't matter I suppose. Probably use Queue because it's more intuitive
+	-when object is in the queue, move it far away to avoid memory hit of deactivation
+
+
+Bullet Spawner Object
+	-shoots bullet when it receives a shoot event
+Bullet
+	-direction, speed
+	-moves in the direction, at the speed, until it's out of the bounding box, then deletes
+
 Bullet pattern system
 	
 	Have global class which stores the compiled pattern files. When an enemy is spawned, it can grab the one it needs from that
