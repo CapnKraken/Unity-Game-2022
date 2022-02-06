@@ -28,7 +28,7 @@ public class BulletSystem : ManagedObject
             if (splitMessage[0] == "Shoot")
             {
                 //Global.LogReport("Shooting, requested by " + senderData);
-
+                
                 try
                 {
                     //sample notification
@@ -41,9 +41,14 @@ public class BulletSystem : ManagedObject
                     float bulletSpeed = float.Parse(splitMessage[3]);
                     float bulletDirection = float.Parse(splitMessage[4]);
 
-                    Bullet b = GameManager.Instance.objectPool.GetObjectFromPool("Bullet").GetComponent<Bullet>();
-                    b.transform.position = bulletPosition;
-                    b.SetStats(bulletSpeed, bulletDirection);
+                    PoolableObject p = GameManager.Instance.objectPool.GetObjectFromPool("Bullet");
+
+                    if (p != null)
+                    {
+                        Bullet b = p.GetComponent<Bullet>();
+                        b.transform.position = bulletPosition;
+                        b.SetStats(bulletSpeed, bulletDirection);
+                    }
                 }
                 catch(Exception e)
                 {

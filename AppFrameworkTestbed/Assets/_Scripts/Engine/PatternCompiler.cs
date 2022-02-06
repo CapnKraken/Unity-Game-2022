@@ -50,9 +50,9 @@ public class PatternCompiler
     private Dictionary<string, List<Action>> functionDictionary;
 
     /// <summary>
-    /// Dictionary to store variable information during compilation.
+    /// List to store variable information during compilation.
     /// </summary>
-    private Dictionary<string, float> variableDictionary;
+    private List<string> variableList;
 
     /// <summary>
     /// Compile a pattern file and add it to the global pattern dictionary.
@@ -61,7 +61,7 @@ public class PatternCompiler
     public void AddPattern(string filePath)
     {
         functionDictionary = new Dictionary<string, List<Action>>();
-        variableDictionary = new Dictionary<string, float>();
+        variableList = new List<string>();
 
         //Add the pattern to the dictionary
         Global.patternDictionary.Add(filePath, Compile(filePath));
@@ -108,6 +108,7 @@ public class PatternCompiler
                         while (splitLine[0].ToLower() != "endignore");
                     }
 
+                    //TODO: test include directive
                     //Include another file in the compilation
                     if(splitLine[0].ToLower() == "include")
                     {
@@ -118,6 +119,13 @@ public class PatternCompiler
                         {
                             ThrowError("Error with include directive.", lineNum);
                         }
+
+                        //set up next line
+                        lineNum++;
+                        line = sr.ReadLine();
+                        line = line.Trim();
+
+                        splitLine = line.Split(' ');
                     }
 
                     //define a function
@@ -146,7 +154,7 @@ public class PatternCompiler
 
                             splitLine = line.Split(' ');
                         }
-
+                        
                         lineNum++;
                         line = sr.ReadLine();
                         line = line.Trim();
@@ -214,6 +222,81 @@ public class PatternCompiler
             ThrowError("Compile error. Check file.", lineNum);
             return;
         }
+        else if(actionID == 1) //spawn a bullet
+        {
+            //model bullet command:
+            //1 0 0 0 0 0 10 0 0 //every other number signifies variable or not
+
+            List<float> parsedLine = new List<float>();
+
+            //Add the main action ID first
+            parsedLine.Add(1);
+
+            if(splitLine[1].ToLower() == "self") //spawn the bullet relative to gameobject position
+            {
+                parsedLine.Add(0);
+            }
+            else if(splitLine[1].ToLower() == "world") //spawn the bullet relative to world coordinates
+            {
+                parsedLine.Add(1);
+            }
+            else
+            {
+                ThrowError("Bullet must be positioned on self or world.", lineNum);
+                return;
+            }
+
+            //x coordinate
+            if (variableList.Contains(splitLine[2]))
+            {
+                parsedLine.Add(1);
+                parsedLine.Add(variableList.IndexOf(splitLine[2]));
+            }
+            else
+            {
+                parsedLine.Add(0);
+                parsedLine.Add(float.Parse(splitLine[2]));
+            }
+
+            //y coordinate
+            if (variableList.Contains(splitLine[3]))
+            {
+                parsedLine.Add(1);
+                parsedLine.Add(variableList.IndexOf(splitLine[3]));
+            }
+            else
+            {
+                parsedLine.Add(0);
+                parsedLine.Add(float.Parse(splitLine[3]));
+            }
+
+            //speed
+            if (variableList.Contains(splitLine[4]))
+            {
+                parsedLine.Add(1);
+                parsedLine.Add(variableList.IndexOf(splitLine[4]));
+            }
+            else
+            {
+                parsedLine.Add(0);
+                parsedLine.Add(float.Parse(splitLine[4]));
+            }
+
+            //direction
+            if (variableList.Contains(splitLine[5]))
+            {
+                parsedLine.Add(1);
+                parsedLine.Add(variableList.IndexOf(splitLine[5]));
+            }
+            else
+            {
+                parsedLine.Add(0);
+                parsedLine.Add(float.Parse(splitLine[5]));
+            }
+
+            //add the action
+            actionList.Add(new Action(parsedLine));
+        }
         else if (actionID == 4) //add logging data to the logs list
         {
             //current length of logs list is the index we'll find the log in
@@ -225,20 +308,75 @@ public class PatternCompiler
         else if(actionID == 5) //call a cluster
         {
             //insert cluster from the dictionary
+            
             actionList.AddRange(clusterDictionary[splitLine[0]]);
         }
+        //do work on a variable. Set, create, increment by
         else if(actionID == 6) //set or create a variable
         {
-            if (variableDictionary.ContainsKey(splitLine[1]))
+            if (!variableList.Contains(splitLine[1]))
             {
-                //update the variable
-                variableDictionary[splitLine[1]] = float.Parse(splitLine[2]);
+                //If there's an operator, throw an error
+                if (IsOperator(splitLine[2]))
+                {
+                    ThrowError("Error: operator cannot be used in variable initialization", lineNum);
+                    return;
+                }
+
+                //create a new variable
+                variableList.Add(splitLine[1]);
+            }
+
+            //Create the compiled line, and add 6 to it (the command number for creating/setting variables)
+            List<float> parsedLine = new List<float>();
+            parsedLine.Add(6);
+            //Add the index of the variable to operate on
+            parsedLine.Add(variableList.IndexOf(splitLine[1]));
+
+            if (IsOperator(splitLine[2]))
+            {
+                parsedLine.Add(1); //1 signifies there is an operator
+                switch (splitLine[2])
+                {
+                    case "+":
+                        parsedLine.Add(0);
+                        break;
+                    case "-":
+                        parsedLine.Add(1);
+                        break;
+                    case "*":
+                        parsedLine.Add(2);
+                        break;
+                    case "/":
+                        parsedLine.Add(3);
+                        break;
+                    case "%":
+                        parsedLine.Add(4);
+                        break;
+                    default: break;
+                }
             }
             else
             {
-                //create a new variable
-                variableDictionary.Add(splitLine[1], float.Parse(splitLine[2]));
+                parsedLine.Add(0); //0 signifies no operator
+                parsedLine.Add(0); // no operator, this is the space it would be in       
             }
+
+            //check if the number to modify the variable by is a variable itself
+            if (variableList.Contains(splitLine[3]))
+            {
+                parsedLine.Add(1); //signify that it's a variable to follow
+                parsedLine.Add(variableList.IndexOf(splitLine[3])); //add the variable index
+            }
+            else
+            {
+                parsedLine.Add(0); //signify no variable
+                parsedLine.Add(float.Parse(splitLine[3]));
+            }
+
+            //add the action
+            actionList.Add(new Action(parsedLine));
+
         }
         else if (actionID != -1) //-1 is the ignore ID. For comments, empty lines, etc.
         {
@@ -247,11 +385,23 @@ public class PatternCompiler
             //Add the main action ID first
             parsedLine.Add(actionID);
 
-            //Convert to floats
-            for (int i = 1; i < splitLine.Length; i++)
+            //if it's a simple one-word thing, like endrepeat, go ahead and add it
+            if(splitLine.Length == 1)
             {
-                //Add all of the modifiers
-                parsedLine.Add(float.Parse(splitLine[i]));
+                //Add the action struct
+                actionList.Add(new Action(parsedLine));
+                return;
+            }
+
+            if(variableList.Contains(splitLine[1])) //true if the number is a variable
+            {
+                parsedLine.Add(1); //1 means the following number is a variable index
+                parsedLine.Add(variableList.IndexOf(splitLine[1]));
+            }
+            else
+            {
+                parsedLine.Add(0); //0 means that the number is not a variable
+                parsedLine.Add(float.Parse(splitLine[1]));
             }
 
             //Add the action struct
@@ -267,7 +417,7 @@ public class PatternCompiler
         switch (actionString.ToLower())
         {
             case "wait": return 0;
-            case "shoot": return 1;
+            case "spawn": return 1;
             case "repeat": return 2;
             case "endrepeat": return 3;
             case "log": return 4;
@@ -286,6 +436,24 @@ public class PatternCompiler
                     return -2; //Error, unrecognized thing
                 }
         }
+    }
+
+    /// <summary>
+    /// Checks to see whether a given string is a mathematical operator.
+    /// </summary>
+    private bool IsOperator(string str)
+    {
+        List<string> operators = new List<string>() 
+        {
+            "+", "-", "*", "%", "/"
+        };
+
+        if (operators.Contains(str))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     #endregion //compiler

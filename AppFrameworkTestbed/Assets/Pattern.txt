@@ -4,7 +4,8 @@ log starting
 
 define Zap
 	repeat 10
-		shoot 0 0 10 -90
+		spawn world 0 0 10 -90
+		spawn self 0 0 10 -90
 		wait 0.1
 		
 	endrepeat
@@ -14,7 +15,7 @@ endfunction
 
 repeat 10
 
-	shoot 10 10 5 -90
+	spawn self 10 10 5 -90
 	wait 1
 	Zap
 	wait 1

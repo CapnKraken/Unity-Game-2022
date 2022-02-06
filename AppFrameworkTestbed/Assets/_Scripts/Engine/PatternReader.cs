@@ -13,6 +13,11 @@ public class PatternReader : ManagedObject
     /// </summary>
     private List<Action> patternData;
 
+    /// <summary>
+    /// the list of variables.
+    /// </summary>
+    private List<float> variables;
+
     #region Timer and Iterator
 
     /// <summary>
@@ -90,17 +95,94 @@ public class PatternReader : ManagedObject
             case 0: //WAIT
                 //Convert seconds to frames
                 //Global.LogReport($"Waiting {action.splitAction[1]} seconds.");
-                waitTimer = (int)(action.splitAction[1] * 60);
+                if(action.splitAction[1] == 0)
+                {
+                    //set wait to the value of action.splitAction[2]
+                    waitTimer = (int)(action.splitAction[2] * 60);
+                }
+                else
+                {
+                    //set wait to the value of the variable indexed at action.splitAction[2]
+                    waitTimer = (int)(variables[(int)action.splitAction[2]] * 60); 
+                }
                 break;
             case 1: //SHOOT
-                Notify(Category.Shooting, $"Shoot {transform.position.x} {transform.position.y} 10, -90");
+                //position to spawn the bullet
+                float xPosition, yPosition;
+                //speed and direction of bullet
+                float speed, direction;
+
+                if(action.splitAction[1] == 0)
+                {
+                    xPosition = transform.position.x;
+                    yPosition = transform.position.y;
+                }
+                else
+                {
+                    xPosition = GameManager.Instance.screenParent.position.x;
+                    yPosition = GameManager.Instance.screenParent.position.y;
+                }
+
+                float xOffset, yOffset;
+
+                //get x position
+                if (action.splitAction[2] == 0)
+                {
+                    xOffset = action.splitAction[3];
+                }
+                else
+                {
+                    xOffset = variables[(int)action.splitAction[3]];
+                }
+
+                //get y position
+                if (action.splitAction[4] == 0)
+                {
+                    yOffset = action.splitAction[5];
+                }
+                else
+                {
+                    yOffset = variables[(int)action.splitAction[5]];
+                }
+
+                //get speed
+                if (action.splitAction[6] == 0)
+                {
+                    speed = action.splitAction[7];
+                }
+                else
+                {
+                    speed = variables[(int)action.splitAction[7]];
+                }
+
+                //get direction
+                if (action.splitAction[8] == 0)
+                {
+                    direction = action.splitAction[9];
+                }
+                else
+                {
+                    direction = variables[(int)action.splitAction[9]];
+                }
+
+
+                Notify(Category.Shooting, $"Shoot {xPosition + xOffset} {yPosition + yOffset} {speed}, {direction}");
                 //Global.LogReport("Shooting");
                 break;
             case 2: //REPEAT
                 {
-                    //Add a new repeater struct to the stack
-                    Repeater temp1 = new Repeater((int)action.splitAction[1], actionIterator);
-                    repeaterStack.Push(temp1);
+                    if(action.splitAction[1] == 0)
+                    {
+                        //Add a new repeater struct to the stack
+                        Repeater temp1 = new Repeater((int)action.splitAction[2], actionIterator);
+                        repeaterStack.Push(temp1);
+                    }
+                    else
+                    {
+                        //Add a new repeater struct to the stack, using the variable as the thing
+                        Repeater temp1 = new Repeater((int)variables[(int)action.splitAction[2]], actionIterator);
+                        repeaterStack.Push(temp1);
+                    }
 
                     //Global.LogReport($"Repeating {temp1.repeats} times.");
                     break;
@@ -126,6 +208,21 @@ public class PatternReader : ManagedObject
             case 4:
                 {
                     //Global.LogReport(logs[(int)action.splitAction[1]]);
+                }
+                break;
+            case 6: //work on a variable
+                if(variables.Count <= action.splitAction[1])
+                {
+
+                    //are we creating a variable and setting it to the value of another?
+                    if(action.splitAction[4] == 1)
+                    {
+
+                    }
+                    else //if not, set the value directly
+                    {
+
+                    }
                 }
                 break;
             default: break;
