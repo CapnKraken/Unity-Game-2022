@@ -15,11 +15,12 @@ public class ObjectPool : MonoBehaviour
 
     //public static int bulletCount;
 
-    public GameObject[] specialAttackPrefabs;
+    /// <summary>
+    /// The location of the waiting area in the world.
+    /// </summary>
+    public Vector3 waitingArea;
 
     public static int sortOrder;
-
-    public Text text;
 
     /// <summary>
     /// Object pool.
@@ -48,7 +49,7 @@ public class ObjectPool : MonoBehaviour
     /// </summary>
     public List<Pool> pools;
 
-    public Dictionary<string, Queue<GameObject>> objectDictionary;
+    public Dictionary<string, Queue<PoolableObject>> objectDictionary;
     public Dictionary<string, int> activeObjectCounts;
 
     private void Start()
@@ -56,31 +57,29 @@ public class ObjectPool : MonoBehaviour
         sortOrder = 0;
 
         //Debug.Log(pools.Count);
-        objectDictionary = new Dictionary<string, Queue<GameObject>>();
+        objectDictionary = new Dictionary<string, Queue<PoolableObject>>();
         activeObjectCounts = new Dictionary<string, int>();
 
         foreach(Pool pool in pools)
         {
-            
-            //Debug.Log(pool.tag);
-            Queue<GameObject> objectQueue = new Queue<GameObject>();
+            Queue<PoolableObject> objectQueue = new Queue<PoolableObject>();
 
             int i = 0;
             for(i = 0; i < pool.size; i++)
             {
-                GameObject g = Instantiate(pool.prefab);
-                g.SetActive(false);
+                PoolableObject g = Instantiate(pool.prefab).GetComponent<PoolableObject>();
+                g.SetActiveInScene(false);
+
+                //start it in the waiting area
+                g.transform.position = waitingArea;
 
                 objectQueue.Enqueue(g);
             }
-            //Debug.Log(i);
-            //Debug.Log($"{pool.tag} : {objectQueue.Count}");
+
 
             objectDictionary.Add(pool.tag, objectQueue);
             activeObjectCounts.Add(pool.tag, 0);
         }
-
-        //Debug.Log(bulletDictionary);
     }
 
 
@@ -94,14 +93,14 @@ public class ObjectPool : MonoBehaviour
         return s;
     }
 
-    public GameObject GetObjectFromPool(string tag)
+    public PoolableObject GetObjectFromPool(string tag)
     {
         if (objectDictionary[tag].Count > 0)
         {
-            GameObject g = objectDictionary[tag].Dequeue();
+            PoolableObject g = objectDictionary[tag].Dequeue();
             objectDictionary[tag].Enqueue(g);
 
-            if (!g.activeSelf)
+            if (!g.GetActiveInScene())
             {
                 activeObjectCounts[tag]++;
             }
@@ -110,35 +109,38 @@ public class ObjectPool : MonoBehaviour
                 return null;
             }
 
-            return g;//.GetComponent<Bullet>();
+            //Set it so it starts listening to the update loop
+            g.excludeTick = false;
+            return g;
         }
         else
         {
-            //Debug.Log("There is no bullet with that tag: " + tag);
             return null;
         }
     }
 
-    public void ReturnObjectToPool(string tag, GameObject obj)
+    public void ReturnObjectToPool(string tag, PoolableObject obj)
     {
         obj.gameObject.transform.rotation = Quaternion.identity;
 
-        if (obj.activeSelf)
+        if (obj.GetActiveInScene())
         {
             activeObjectCounts[tag]--;
         }
 
-        obj.gameObject.SetActive(false);
+        //deactivate it
+        obj.excludeTick = true;
+        obj.SetActiveInScene(false);
 
-        
-        //bulletDictionary[tag].Enqueue(bullet);
+        //put it in the waiting area location
+        obj.transform.position = waitingArea;
     }
 
     public void ClearDictionary()
     {
-        foreach(KeyValuePair<string, Queue<GameObject>> k in objectDictionary)
+        foreach(KeyValuePair<string, Queue<PoolableObject>> k in objectDictionary)
         {
-            foreach(GameObject o in k.Value)
+            foreach(PoolableObject o in k.Value)
             {
                 Destroy(o.gameObject);
             }

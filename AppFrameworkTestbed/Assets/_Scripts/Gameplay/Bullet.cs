@@ -2,21 +2,33 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Bullet : NotifiableObj, iTickable
+public class Bullet : PoolableObject
 {
 
-    [SerializeField] private float speed {get;set;}
-    [SerializeField] private float direction {get;set;}
+    [SerializeField] private float speed;
+    [SerializeField] private float direction;
 
-    #region Initialize and DeInitialize
-    protected override void Initialize()
+    public void SetStats(float speed, float direction)
     {
-        GameManager.Instance.AddTicker(this);
+        this.speed = speed;
+        this.direction = direction;
     }
 
-    protected override void DeInitialize()
+    #region Initialize
+    protected override void Initialize()
     {
-        GameManager.Instance.RemoveTicker(this);
+    }
+    #endregion
+
+    #region Activate and Deactivate from pool
+    protected override void OnActivate()
+    {
+        
+    }
+
+    protected override void OnDeactivate()
+    {
+        
     }
     #endregion
 
@@ -24,9 +36,19 @@ public class Bullet : NotifiableObj, iTickable
     /// The bounds of the bullet.
     /// </summary>
     public Vector2 upperBound, lowerBound;
-    public void Tick()
+    public override void Tick()
     {
         Global.MoveObject(transform, direction, speed);
+
+        Vector3 pos = transform.position;
+        bool outBounds = false;
+        if (pos.x > upperBound.x || pos.x < lowerBound.x) outBounds = true;
+        if (pos.y > upperBound.y || pos.y < lowerBound.y) outBounds = true;
+
+        if (outBounds)
+        {
+            GameManager.Instance.objectPool.ReturnObjectToPool(this.tag, this);
+        }
     }
 
     public override void OnNotify(Category category, string message, string senderData)

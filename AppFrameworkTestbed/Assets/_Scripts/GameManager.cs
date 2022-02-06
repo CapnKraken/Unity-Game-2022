@@ -16,6 +16,16 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public Messenger messenger;
 
+    /// <summary>
+    /// The object pool.
+    /// </summary>
+    public ObjectPool objectPool;
+
+    /// <summary>
+    /// Pattern Compiler
+    /// </summary>
+    private PatternCompiler patternCompiler;
+
     #region Singleton
 
     //The allowed instance of the GameManager
@@ -49,16 +59,16 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// List of objects that need determinstic updates.
     /// </summary>
-    private List<iTickable> tickers;
+    private List<ManagedObject> managedObjects;
 
-    public void AddTicker(iTickable t)
+    public void AddTicker(ManagedObject t)
     {
-        tickers.Add(t);
+        managedObjects.Add(t);
     }
 
-    public void RemoveTicker(iTickable t)
+    public void RemoveTicker(ManagedObject t)
     {
-        tickers.Remove(t);
+        managedObjects.Remove(t);
     }
     #endregion
 
@@ -86,7 +96,7 @@ public class GameManager : MonoBehaviour
         messenger = new Messenger();
 
         //initialize the ticker list
-        tickers = new List<iTickable>();
+        managedObjects = new List<ManagedObject>();
 
         //initialize the hit circle list
         hitCircles = new List<HitCircle>();
@@ -94,7 +104,42 @@ public class GameManager : MonoBehaviour
         //Disable vSync and lock framerate at 60fps
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 60;
+
+        //Sets the aspect ratio to 6:9
+        SetAspectRatio(6, 9);
+
+        //compile the test file
+        Global.patternDictionary = new Dictionary<string, List<Action>>();
+        patternCompiler = new PatternCompiler();
+        patternCompiler.Compile("Pattern.txt");
     }
+
+    #region Screen Setup
+    /// <summary>
+    /// Sets the aspect ratio to the specified numbers. <br/>
+    /// Form- height:width
+    /// </summary>
+    /// <param name="width">Second number</param>
+    /// <param name="height">First number</param>
+    private void SetAspectRatio(int height, int width)
+    {
+        int screenHeight = Screen.height;
+        int screenWidth = Screen.width;
+
+
+
+        if (screenWidth >= screenHeight * 1.5f)
+        {
+            screenWidth = (int)((width * screenHeight) / (float)height);
+        }
+        else
+        {
+            screenHeight = (int)((height * screenWidth) / (float)width);
+        }
+
+        Screen.SetResolution(screenWidth, screenHeight, true);
+    }
+    #endregion
 
     /// <summary>
     /// In this method, update all notifiable objects and the messenger.
@@ -108,9 +153,9 @@ public class GameManager : MonoBehaviour
          */
 
         //Update each tickable object
-        foreach(iTickable t in tickers)
+        foreach(ManagedObject t in managedObjects)
         {
-            t.Tick();
+            if(!t.excludeTick) t.Tick();
         }
 
         //make objects respond to notifications

@@ -5,179 +5,54 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+#region Action Struct
+
+public struct Action
+{
+    //list to store the action
+    public List<float> splitAction;
+
+    //The length of the list
+    public int length;
+
+    public Action(List<float> splitAction)
+    {
+        this.splitAction = splitAction;
+        this.length = splitAction.Count;
+    }
+
+    public override string ToString()
+    {
+        string s = "{";
+        foreach (float f in splitAction)
+        {
+            s += $"[{f}]";
+        }
+        s += "}";
+        return s;
+    }
+}
+
+
+#endregion //action struct
+
 //Attach to whatever is in charge of compiling the patterns when the game/level starts
 
 //Eventually, move the thing that runs the compiled pattern to a seperate component
 
-public class PatternCompiler : NotifiableObj, iTickable
+public class PatternCompiler
 {
-    /// <summary>
-    /// The list of commands/actions that the program reads.
-    /// </summary>
-    private List<Action> patternData;
-
-    #region Timer and Iterator
-
-    /// <summary>
-    /// The program will wait if this is greater than 0.
-    /// </summary>
-    private int waitTimer;
-
-    /// <summary>
-    /// The variable that iterates through the action list. <br/>
-    /// Use it to tell you which line the program is on.
-    /// </summary>
-    private int actionIterator;
-
-    #endregion
-
-    #region Repeater Stack and Struct
-
-    private Stack<Repeater> repeaterStack;
-    /// <summary>
-    /// Struct to store 2 ints: A repeat counter and a line number representing where to jump back to.
-    /// </summary>
-    private struct Repeater
-    {
-        public int repeats, lineNumber;
-        public Repeater(int repeats, int lineNumber)
-        {
-            this.repeats = repeats;
-            this.lineNumber = lineNumber;
-        }
-    }
-
-    #endregion
-
-    /// <summary>
-    /// What the bullet script uses to debug log.
-    /// </summary>
-    private List<string> logs;
-
-    #region Update
-    public void Tick()
-    {
-        if (patternData.Count == 0) return;
-
-        if(waitTimer == 0)
-        {
-            //In a dowhile so it can run multiple commands per frame, if there's no wait in between
-            do
-            {
-                //Execute the action
-                DoAction(patternData[actionIterator]);
-                actionIterator++;
-
-                //Wrap actionIterator if it exceeds the list length
-                if (actionIterator >= patternData.Count) actionIterator = 0;
-            }
-            while (waitTimer == 0);
-        }
-        else
-        {
-            //Count down if it's waiting.
-            waitTimer--;
-        }
-    }
-#endregion
-
-    #region Do Action
-    /// <summary>
-    /// Perform an action.
-    /// </summary>
-    private void DoAction(Action action)
-    {
-        //First number in splitAction should be an int
-        switch ((int)action.splitAction[0])
-        {
-            case 0: //WAIT
-                //Convert seconds to frames
-                Global.LogReport($"Waiting {action.splitAction[1]} seconds.");
-                waitTimer = (int)(action.splitAction[1] * 60);
-                break;
-            case 1: //SHOOT
-                //Notify(Category.Shooting, "Shoot");
-                Global.LogReport("Shooting");
-                break;
-            case 2: //REPEAT
-                {
-                    //Add a new repeater struct to the stack
-                    Repeater temp1 = new Repeater((int)action.splitAction[1], actionIterator);
-                    repeaterStack.Push(temp1);
-
-                    Global.LogReport($"Repeating {temp1.repeats} times.");
-                    break;
-                }
-            case 3: //ENDREPEAT
-                {
-                    Repeater temp2 = repeaterStack.Pop();
-                    temp2.repeats--;
-
-                    //if r.repeats == 0, then the program will continue
-                    if (temp2.repeats > 0)
-                    {
-                        //Set the actionIterator to point to the start of the repeat
-                        actionIterator = temp2.lineNumber;
-
-                        Global.LogReport($"Repeating {temp2.repeats} more times.");
-
-                        //push it back onto the stack
-                        repeaterStack.Push(temp2);
-                    }
-                    break;
-                }
-            case 4:
-                {
-                    Global.LogReport(logs[(int)action.splitAction[1]]);
-                }
-                break;
-            default:break;
-        }
-    }
-
-    #endregion
-
-    #region Initialize and Deinitialize
-    protected override void Initialize()
-    {
-        GameManager.Instance.AddTicker(this);
-
-        Compile("Pattern.txt");
-
-        //Initialize variables
-        waitTimer = 0;
-        actionIterator = 0;
-
-        //Initialize data structures
-        repeaterStack = new Stack<Repeater>();
-    }
-
-    protected override void DeInitialize()
-    {
-        GameManager.Instance.RemoveTicker(this);
-    }
-
-    #endregion
-
-    #region Notifications
-    public override void OnNotify(Category category, string message, string senderData)
-    {
-        
-    }
-
-    public override string GetLoggingData()
-    {
-        return name;
-    }
-    #endregion
+    public PatternCompiler() { }
 
     #region Pattern Interpreter/Compiler
 
-    private void Compile(string filePath)
+    public void Compile(string filePath)
     {
         //Initialize lists
-        patternData = new List<Action>();
-        logs = new List<string>();
+        List<Action> patternData = new List<Action>();
+
+        // TODO: Re-Implement logs. Temporarily disabled. It's action type 4.
+        //logs = new List<string>();
 
         //Create temporary dictionary to store cluster information
         Dictionary<string, List<Action>> clusterDictionary = new Dictionary<string, List<Action>>();
@@ -263,6 +138,9 @@ public class PatternCompiler : NotifiableObj, iTickable
             //Close the streamreader when we're done.
             sr.Close();
 
+            //Add the completed compiled pattern to the global dictionary
+            Global.patternDictionary.Add(filePath, patternData);
+
             #region Compiled file log
             //Log the compiled file
             string s = ActionListToString(patternData);
@@ -309,10 +187,10 @@ public class PatternCompiler : NotifiableObj, iTickable
         else if (actionID == 4) //add logging data to the logs list
         {
             //current length of logs list is the index we'll find the log in
-            actionList.Add(new Action(new List<float>() { actionID, logs.Count }));
+            //actionList.Add(new Action(new List<float>() { actionID, logs.Count }));
 
             //substring is to remove "log" from the log
-            logs.Add(line.Substring(3));
+            //logs.Add(line.Substring(3));
         }
         else if(actionID == 5) //call a cluster
         {
@@ -357,37 +235,6 @@ public class PatternCompiler : NotifiableObj, iTickable
             default: Global.LogReport($"String {actionString} not recognized."); return -2; //Error, unrecognized thing
         }
     }
-
-    #region Action Struct
-    
-    private struct Action
-    {
-        //list to store the action
-        public List<float> splitAction;
-
-        //The length of the list
-        public int length;
-
-        public Action(List<float> splitAction)
-        {
-            this.splitAction = splitAction;
-            this.length = splitAction.Count;
-        }
-
-        public override string ToString()
-        {
-            string s = "{";
-            foreach(float f in splitAction)
-            {
-                s += $"[{f}]";
-            }
-            s += "}";
-            return s;
-        }
-    }
-
-
-    #endregion //action struct
 
     #endregion //compiler
 

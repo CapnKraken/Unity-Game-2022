@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioSystem : NotifiableObj
+public class AudioSystem : ManagedObject
 {
     private AudioSource source;
 

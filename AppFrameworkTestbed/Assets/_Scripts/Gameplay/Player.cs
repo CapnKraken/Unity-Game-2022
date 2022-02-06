@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [SelectionBase]
-public class Player : NotifiableObj, iTickable
+public class Player : ManagedObject
 {
     /// <summary>
     /// How fast the player moves when unfocused and focused, respectively.
@@ -19,22 +19,15 @@ public class Player : NotifiableObj, iTickable
     /// </summary>
     public HitCircle hitbox;
 
-    #region Initialize and DeInitialize
+    #region Initialize
     protected override void Initialize()
     {
         hitbox = GetComponent<HitCircle>();
-
-        GameManager.Instance.AddTicker(this);
-    }
-
-    protected override void DeInitialize()
-    {
-        GameManager.Instance.RemoveTicker(this);
     }
     #endregion
 
     #region Update
-    public void Tick()
+    public override void Tick()
     {
         #region Get Inputs
         bool[] inputs = new bool[]
@@ -44,8 +37,16 @@ public class Player : NotifiableObj, iTickable
             Input.GetKey(KeyCode.LeftArrow),
             Input.GetKey(KeyCode.RightArrow),
 
-            Input.GetKey(KeyCode.LeftShift)
+            Input.GetKey(KeyCode.LeftShift),
+
+            Input.GetKey(KeyCode.Escape)
         };
+
+        //Temporary- if user presses escape, application quits.
+        if(inputs[5] == true)
+        {
+            Application.Quit();
+        }
         #endregion
 
         #region Handle Movement
@@ -78,14 +79,18 @@ public class Player : NotifiableObj, iTickable
         #region Test for Enemy Hit
         if(GameManager.Instance.TestForHit(hitbox, "Enemy"))
         {
-            Global.LogReport("Touching enemy.");
+            Notify(Category.GENERAL, "PlayerHit");
         }
         #endregion
     }
     #endregion
     public override void OnNotify(Category category, string message, string senderData)
     {
-        
+        //Send a message to play the audio sound
+        Notify(Category.Audio, "PlaySound PlayerHit");
+
+        //respawn at 0, 0
+        transform.localPosition = new Vector3(0, 0, 0);
     }
 
     public override string GetLoggingData()
