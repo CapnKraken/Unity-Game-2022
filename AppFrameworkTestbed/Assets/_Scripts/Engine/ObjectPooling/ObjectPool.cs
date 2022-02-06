@@ -71,7 +71,7 @@ public class ObjectPool : MonoBehaviour
                 g.SetActiveInScene(false);
 
                 //start it in the waiting area
-                g.transform.position = waitingArea;
+                g.transform.localPosition = waitingArea;
 
                 objectQueue.Enqueue(g);
             }
@@ -110,6 +110,7 @@ public class ObjectPool : MonoBehaviour
             }
 
             //Set it so it starts listening to the update loop
+            g.SetActiveInScene(true);
             g.excludeTick = false;
             return g;
         }
@@ -133,7 +134,7 @@ public class ObjectPool : MonoBehaviour
         obj.SetActiveInScene(false);
 
         //put it in the waiting area location
-        obj.transform.position = waitingArea;
+        obj.transform.localPosition = waitingArea;
     }
 
     public void ClearDictionary()

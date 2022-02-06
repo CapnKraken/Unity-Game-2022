@@ -23,6 +23,7 @@ public class Player : ManagedObject
     protected override void Initialize()
     {
         hitbox = GetComponent<HitCircle>();
+        GameManager.Instance.player = this;
     }
     #endregion
 

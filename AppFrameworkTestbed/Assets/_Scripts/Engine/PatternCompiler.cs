@@ -38,24 +38,42 @@ public struct Action
 
 //Attach to whatever is in charge of compiling the patterns when the game/level starts
 
-//Eventually, move the thing that runs the compiled pattern to a seperate component
-
 public class PatternCompiler
 {
     public PatternCompiler() { }
 
     #region Pattern Interpreter/Compiler
 
-    public void Compile(string filePath)
+    /// <summary>
+    /// Dictionary to store cluster information during compilation.
+    /// </summary>
+    private Dictionary<string, List<Action>> functionDictionary;
+
+    /// <summary>
+    /// Dictionary to store variable information during compilation.
+    /// </summary>
+    private Dictionary<string, float> variableDictionary;
+
+    /// <summary>
+    /// Compile a pattern file and add it to the global pattern dictionary.
+    /// </summary>
+    /// <param name="filePath">The name of the file.</param>
+    public void AddPattern(string filePath)
+    {
+        functionDictionary = new Dictionary<string, List<Action>>();
+        variableDictionary = new Dictionary<string, float>();
+
+        //Add the pattern to the dictionary
+        Global.patternDictionary.Add(filePath, Compile(filePath));
+    }
+
+    public List<Action> Compile(string filePath)
     {
         //Initialize lists
         List<Action> patternData = new List<Action>();
 
         // TODO: Re-Implement logs. Temporarily disabled. It's action type 4.
         //logs = new List<string>();
-
-        //Create temporary dictionary to store cluster information
-        Dictionary<string, List<Action>> clusterDictionary = new Dictionary<string, List<Action>>();
 
         //Check if the file exists.
         if (File.Exists(Application.dataPath + "/" + filePath))
@@ -90,12 +108,25 @@ public class PatternCompiler
                         while (splitLine[0].ToLower() != "endignore");
                     }
 
+                    //Include another file in the compilation
+                    if(splitLine[0].ToLower() == "include")
+                    {
+                        try
+                        {
+                            patternData.AddRange(Compile(splitLine[1]));
+                        }catch
+                        {
+                            ThrowError("Error with include directive.", lineNum);
+                        }
+                    }
+
+                    //define a function
                     if(splitLine[0].ToLower() == "define")
                     {
                         string clusterName = splitLine[1];
 
                         //Add the cluster to the dictionary
-                        clusterDictionary.Add(clusterName, new List<Action>());
+                        functionDictionary.Add(clusterName, new List<Action>());
 
                         //Read until it reaches an endcluster command
                         lineNum++;
@@ -104,10 +135,10 @@ public class PatternCompiler
 
                         splitLine = line.Split(' ');
 
-                        while (splitLine[0].ToLower() != "endcluster")
+                        while (splitLine[0].ToLower() != "endfunction")
                         {
                             //process the line into the cluster
-                            ProcessLine(splitLine, line, lineNum, clusterDictionary[clusterName], clusterDictionary);
+                            ProcessLine(splitLine, line, lineNum, functionDictionary[clusterName], functionDictionary);
 
                             lineNum++;
                             line = sr.ReadLine();
@@ -123,11 +154,11 @@ public class PatternCompiler
                         splitLine = line.Split(' ');
 
                         //Log the dictionary entry
-                        Global.LogReport($"Putting cluster {clusterName} in dictionary:\n" + ActionListToString(clusterDictionary[clusterName]));
+                        Global.LogReport($"Putting cluster {clusterName} in dictionary:\n" + ActionListToString(functionDictionary[clusterName]));
                     }
 
                     //process the line
-                    ProcessLine(splitLine, line, lineNum, patternData, clusterDictionary);
+                    ProcessLine(splitLine, line, lineNum, patternData, functionDictionary);
                 }
                 catch(System.Exception e)
                 {
@@ -138,18 +169,17 @@ public class PatternCompiler
             //Close the streamreader when we're done.
             sr.Close();
 
-            //Add the completed compiled pattern to the global dictionary
-            Global.patternDictionary.Add(filePath, patternData);
-
             #region Compiled file log
             //Log the compiled file
             string s = ActionListToString(patternData);
             Global.LogReport(s);
             #endregion
+            return patternData;
         }
         else
         {
             Global.LogReport($"File: {Application.dataPath + "/" + filePath} does not exist.");
+            return null;
         }
     }
 
@@ -195,7 +225,20 @@ public class PatternCompiler
         else if(actionID == 5) //call a cluster
         {
             //insert cluster from the dictionary
-            actionList.AddRange(clusterDictionary[splitLine[1]]);
+            actionList.AddRange(clusterDictionary[splitLine[0]]);
+        }
+        else if(actionID == 6) //set or create a variable
+        {
+            if (variableDictionary.ContainsKey(splitLine[1]))
+            {
+                //update the variable
+                variableDictionary[splitLine[1]] = float.Parse(splitLine[2]);
+            }
+            else
+            {
+                //create a new variable
+                variableDictionary.Add(splitLine[1], float.Parse(splitLine[2]));
+            }
         }
         else if (actionID != -1) //-1 is the ignore ID. For comments, empty lines, etc.
         {
@@ -228,11 +271,20 @@ public class PatternCompiler
             case "repeat": return 2;
             case "endrepeat": return 3;
             case "log": return 4;
-            case "call": return 5;
+            case "set": return 6; //set or create a variable
             case "//": return -1;//Comment or empty line. Signal to ignore
             case "": return -1;
             case "endignore": return -1;
-            default: Global.LogReport($"String {actionString} not recognized."); return -2; //Error, unrecognized thing
+            default:
+                if (functionDictionary.ContainsKey(actionString))
+                {
+                    return 5; //call a function
+                }
+                else
+                {
+                    Global.LogReport($"String {actionString} not recognized.");
+                    return -2; //Error, unrecognized thing
+                }
         }
     }
 

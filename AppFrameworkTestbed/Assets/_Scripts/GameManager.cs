@@ -26,6 +26,17 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private PatternCompiler patternCompiler;
 
+    /// <summary>
+    /// The object representing where the screen is. <br/>
+    /// Set other object's transform parent to this.
+    /// </summary>
+    public Transform screenParent;
+
+    /// <summary>
+    /// A reference to the player object.
+    /// </summary>
+    public Player player;
+
     #region Singleton
 
     //The allowed instance of the GameManager
@@ -108,10 +119,10 @@ public class GameManager : MonoBehaviour
         //Sets the aspect ratio to 6:9
         SetAspectRatio(6, 9);
 
-        //compile the test file
+        //compile the test pattern file
         Global.patternDictionary = new Dictionary<string, List<Action>>();
         patternCompiler = new PatternCompiler();
-        patternCompiler.Compile("Pattern.txt");
+        patternCompiler.AddPattern("Pattern.txt");
     }
 
     #region Screen Setup

@@ -4,19 +4,19 @@ log starting
 
 define Zap
 	repeat 10
-		shoot 1
+		shoot 0 0 10 -90
 		wait 0.1
 		
 	endrepeat
-endcluster
+endfunction
 
 // Start here
 
 repeat 10
 
-	shoot 2
+	shoot 10 10 5 -90
 	wait 1
-	call Zap
+	Zap
 	wait 1
 
 endrepeat

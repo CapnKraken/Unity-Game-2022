@@ -89,7 +89,7 @@ public class PatternReader : ManagedObject
         {
             case 0: //WAIT
                 //Convert seconds to frames
-                Global.LogReport($"Waiting {action.splitAction[1]} seconds.");
+                //Global.LogReport($"Waiting {action.splitAction[1]} seconds.");
                 waitTimer = (int)(action.splitAction[1] * 60);
                 break;
             case 1: //SHOOT
@@ -102,7 +102,7 @@ public class PatternReader : ManagedObject
                     Repeater temp1 = new Repeater((int)action.splitAction[1], actionIterator);
                     repeaterStack.Push(temp1);
 
-                    Global.LogReport($"Repeating {temp1.repeats} times.");
+                    //Global.LogReport($"Repeating {temp1.repeats} times.");
                     break;
                 }
             case 3: //ENDREPEAT
@@ -116,7 +116,7 @@ public class PatternReader : ManagedObject
                         //Set the actionIterator to point to the start of the repeat
                         actionIterator = temp2.lineNumber;
 
-                        Global.LogReport($"Repeating {temp2.repeats} more times.");
+                        //Global.LogReport($"Repeating {temp2.repeats} more times.");
 
                         //push it back onto the stack
                         repeaterStack.Push(temp2);

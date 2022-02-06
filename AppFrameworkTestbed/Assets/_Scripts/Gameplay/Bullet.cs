@@ -8,6 +8,11 @@ public class Bullet : PoolableObject
     [SerializeField] private float speed;
     [SerializeField] private float direction;
 
+    /// <summary>
+    /// The bullet's collision circle
+    /// </summary>
+    private HitCircle hitCircle;
+
     public void SetStats(float speed, float direction)
     {
         this.speed = speed;
@@ -17,13 +22,17 @@ public class Bullet : PoolableObject
     #region Initialize
     protected override void Initialize()
     {
+        //Bullets exist relative to the camera position
+        transform.parent = GameManager.Instance.screenParent;
+        hitCircle = GetComponent<HitCircle>();
+        
     }
     #endregion
 
+    //Empty
     #region Activate and Deactivate from pool
     protected override void OnActivate()
     {
-        
     }
 
     protected override void OnDeactivate()
@@ -38,9 +47,10 @@ public class Bullet : PoolableObject
     public Vector2 upperBound, lowerBound;
     public override void Tick()
     {
+        #region Move
         Global.MoveObject(transform, direction, speed);
 
-        Vector3 pos = transform.position;
+        Vector3 pos = transform.localPosition;
         bool outBounds = false;
         if (pos.x > upperBound.x || pos.x < lowerBound.x) outBounds = true;
         if (pos.y > upperBound.y || pos.y < lowerBound.y) outBounds = true;
@@ -49,6 +59,14 @@ public class Bullet : PoolableObject
         {
             GameManager.Instance.objectPool.ReturnObjectToPool(this.tag, this);
         }
+        #endregion
+
+        #region Player Collision
+        if (hitCircle.isTouching(GameManager.Instance.player.hitbox))
+        {
+            Notify(Category.GENERAL, "PlayerHit");
+        }
+        #endregion
     }
 
     public override void OnNotify(Category category, string message, string senderData)

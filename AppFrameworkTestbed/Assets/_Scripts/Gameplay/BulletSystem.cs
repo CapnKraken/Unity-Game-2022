@@ -27,7 +27,7 @@ public class BulletSystem : ManagedObject
 
             if (splitMessage[0] == "Shoot")
             {
-                Global.LogReport("Shooting, requested by " + senderData);
+                //Global.LogReport("Shooting, requested by " + senderData);
 
                 try
                 {
