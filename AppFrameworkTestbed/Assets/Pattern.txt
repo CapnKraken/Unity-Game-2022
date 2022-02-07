@@ -1,79 +1,38 @@
-log starting
+// include the standard library
+INCLUDE stdlib.txt
 
-// Defining clusters
+Set direction = 0
 
-define Zap
-	repeat 10
-		spawn world 0 0 10 -90
-		spawn self 0 0 10 -90
-		wait 0.1
+Repeat 5
+	
+	Set xPos = 0
+	Set speed = 1
+	Set burst = 5
+	Set whip = 1
+	
+	Wait 0.5
+
+	Repeat 5
 		
-	endrepeat
-endfunction
+		Shoot
+		Set direction + 10
+		Set speed + 1.5
 
-// Start here
+		Wait 0.2
 
-repeat 10
+	EndRepeat
 
-	spawn self 10 10 5 -90
-	wait 1
-	Zap
-	wait 1
+	Set whipIncrement = 1
+	Set speed = 1
+	Set direction = -90
+	
+	Repeat 3
+		Set burst = 1
+		Set whip = 4
+		Shoot
 
-endrepeat
+		Set whipIncrement + 1
+		Wait 1
 
-
-IGNORE
-wait 2
-shoot
-shoot
-wait 2
-
-repeat 2
-	wait 5
-
-	log Calling Zap Cluster
-	call Zap
-
-	wait 3
-
-	repeat 4
-		shoot
-		wait .1
-	endrepeat
-endrepeat
-
-log ending
-
-IGNORE
-
-
-{storage for clusters}
-//length of cluster
-5
-{5 instructions}
-
-{storage for main instructions}
-
-OR
-
-{storage for main instructions}
-//clusters compiled directly into the list of instructions
-
-
-
-So the pattern.txt will look like
-
-{cluster definitions}
-
-{main instructions}
-
-but the compiled list will just be
-
-{instructions}
-
-
-
-
-
-ENDIGNORE
+	EndRepeat
+EndRepeat

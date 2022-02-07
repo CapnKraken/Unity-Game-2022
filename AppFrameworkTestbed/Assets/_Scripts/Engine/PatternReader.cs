@@ -112,7 +112,18 @@ public class PatternReader : ManagedObject
                 //speed and direction of bullet
                 float speed, direction;
 
-                if(action.splitAction[1] == 0)
+                int location = 0;
+                //get location (0: self, 1: world)
+                if (action.splitAction[1] == 0)
+                {
+                    location = (int)action.splitAction[2];
+                }
+                else
+                {
+                    location = (int)variables[(int)action.splitAction[2]];
+                }
+
+                if (location == 0)
                 {
                     xPosition = transform.position.x;
                     yPosition = transform.position.y;
@@ -126,47 +137,47 @@ public class PatternReader : ManagedObject
                 float xOffset, yOffset;
 
                 //get x position
-                if (action.splitAction[2] == 0)
+                if (action.splitAction[3] == 0)
                 {
-                    xOffset = action.splitAction[3];
+                    xOffset = action.splitAction[4];
                 }
                 else
                 {
-                    xOffset = variables[(int)action.splitAction[3]];
+                    xOffset = variables[(int)action.splitAction[4]];
                 }
 
                 //get y position
-                if (action.splitAction[4] == 0)
+                if (action.splitAction[5] == 0)
                 {
-                    yOffset = action.splitAction[5];
+                    yOffset = action.splitAction[6];
                 }
                 else
                 {
-                    yOffset = variables[(int)action.splitAction[5]];
+                    yOffset = variables[(int)action.splitAction[6]];
                 }
 
                 //get speed
-                if (action.splitAction[6] == 0)
+                if (action.splitAction[7] == 0)
                 {
-                    speed = action.splitAction[7];
+                    speed = action.splitAction[8];
                 }
                 else
                 {
-                    speed = variables[(int)action.splitAction[7]];
+                    speed = variables[(int)action.splitAction[8]];
                 }
 
                 //get direction
-                if (action.splitAction[8] == 0)
+                if (action.splitAction[9] == 0)
                 {
-                    direction = action.splitAction[9];
+                    direction = action.splitAction[10];
                 }
                 else
                 {
-                    direction = variables[(int)action.splitAction[9]];
+                    direction = variables[(int)action.splitAction[10]];
                 }
 
 
-                Notify(Category.Shooting, $"Shoot {xPosition + xOffset} {yPosition + yOffset} {speed}, {direction}");
+                Notify(Category.Shooting, $"Shoot {xPosition + xOffset} {yPosition + yOffset} {speed} {direction}");
                 //Global.LogReport("Shooting");
                 break;
             case 2: //REPEAT
@@ -213,17 +224,49 @@ public class PatternReader : ManagedObject
             case 6: //work on a variable
                 if(variables.Count <= action.splitAction[1])
                 {
+                    //create the variable if it doesn't exist already
+                    variables.Add(0);
+                    //Global.LogReport("Count: " + variables.Count);
+                }
 
-                    //are we creating a variable and setting it to the value of another?
-                    if(action.splitAction[4] == 1)
+                //are we creating a variable and setting it to the value of another?
+                float givenNumber;
+                if (action.splitAction[4] == 1)
+                {
+                    //set the number to the value of the variable
+                    givenNumber = variables[(int)action.splitAction[5]];
+                }
+                else //if not, set the value directly
+                {
+                    givenNumber = action.splitAction[5];
+                }
+
+                if (action.splitAction[2] == 1)
+                {
+                    switch (action.splitAction[3])
                     {
-
-                    }
-                    else //if not, set the value directly
-                    {
-
+                        case 0: // +
+                            variables[(int)action.splitAction[1]] += givenNumber;
+                            break;
+                        case 1: // -
+                            variables[(int)action.splitAction[1]] -= givenNumber;
+                            break;
+                        case 2: // *
+                            variables[(int)action.splitAction[1]] *= givenNumber;
+                            break;
+                        case 3: // /
+                            variables[(int)action.splitAction[1]] /= givenNumber;
+                            break;
+                        default: break;
                     }
                 }
+                else
+                {
+                    //set the variable to the number
+                    Global.LogReport($"Variables.Count: {variables.Count}\nSplitAction[1]: {action.splitAction[1]}");
+                    variables[(int)action.splitAction[1]] = givenNumber;
+                }
+
                 break;
             default: break;
         }
@@ -242,6 +285,8 @@ public class PatternReader : ManagedObject
         repeaterStack = new Stack<Repeater>();
 
         patternData = Global.patternDictionary[patternFileName];
+
+        variables = new List<float>();
     }
 
     #endregion

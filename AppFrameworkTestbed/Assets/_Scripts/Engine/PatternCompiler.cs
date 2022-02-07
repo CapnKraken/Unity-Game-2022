@@ -112,13 +112,9 @@ public class PatternCompiler
                     //Include another file in the compilation
                     if(splitLine[0].ToLower() == "include")
                     {
-                        try
-                        {
-                            patternData.AddRange(Compile(splitLine[1]));
-                        }catch
-                        {
-                            ThrowError("Error with include directive.", lineNum);
-                        }
+                        
+                        List<Action> includedFile = Compile(splitLine[1]);
+                        patternData.AddRange(includedFile);
 
                         //set up next line
                         lineNum++;
@@ -143,10 +139,12 @@ public class PatternCompiler
 
                         splitLine = line.Split(' ');
 
+                        //TODO: Bug: compilation error when file ends with endfunction
+
                         while (splitLine[0].ToLower() != "endfunction")
                         {
                             //process the line into the cluster
-                            ProcessLine(splitLine, line, lineNum, functionDictionary[clusterName], functionDictionary);
+                            ProcessLine(splitLine, line, lineNum, functionDictionary[clusterName]);
 
                             lineNum++;
                             line = sr.ReadLine();
@@ -166,11 +164,11 @@ public class PatternCompiler
                     }
 
                     //process the line
-                    ProcessLine(splitLine, line, lineNum, patternData, functionDictionary);
+                    ProcessLine(splitLine, line, lineNum, patternData);
                 }
                 catch(System.Exception e)
                 {
-                    ThrowError(e.ToString(), lineNum);
+                    ThrowError(e.ToString() + "\nFilename: " + filePath, lineNum);
                 }
             }
 
@@ -180,7 +178,7 @@ public class PatternCompiler
             #region Compiled file log
             //Log the compiled file
             string s = ActionListToString(patternData);
-            Global.LogReport(s);
+            Global.LogReport($"Filename: {filePath}\nCompiled:\n{s}");
             #endregion
             return patternData;
         }
@@ -211,7 +209,7 @@ public class PatternCompiler
     /// <param name="lineNum">the current line number</param>
     /// <param name="actionList">the action list to modify</param>
     /// <param name="clusterDictionary">the dictionary storing the clusters</param>
-    private void ProcessLine(string[] splitLine, string line, int lineNum, List<Action> actionList, Dictionary<string, List<Action>> clusterDictionary)
+    private void ProcessLine(string[] splitLine, string line, int lineNum, List<Action> actionList)
     {
         //get the ID of the initial action
         int actionID = ActionStringToInt(splitLine[0]);
@@ -232,18 +230,16 @@ public class PatternCompiler
             //Add the main action ID first
             parsedLine.Add(1);
 
-            if(splitLine[1].ToLower() == "self") //spawn the bullet relative to gameobject position
-            {
-                parsedLine.Add(0);
-            }
-            else if(splitLine[1].ToLower() == "world") //spawn the bullet relative to world coordinates
+            //Add the location
+            if (variableList.Contains(splitLine[1]))
             {
                 parsedLine.Add(1);
+                parsedLine.Add(variableList.IndexOf(splitLine[1]));
             }
             else
             {
-                ThrowError("Bullet must be positioned on self or world.", lineNum);
-                return;
+                parsedLine.Add(0);
+                parsedLine.Add(int.Parse(splitLine[1]));
             }
 
             //x coordinate
@@ -309,7 +305,7 @@ public class PatternCompiler
         {
             //insert cluster from the dictionary
             
-            actionList.AddRange(clusterDictionary[splitLine[0]]);
+            actionList.AddRange(functionDictionary[splitLine[0]]);
         }
         //do work on a variable. Set, create, increment by
         else if(actionID == 6) //set or create a variable
@@ -325,6 +321,12 @@ public class PatternCompiler
 
                 //create a new variable
                 variableList.Add(splitLine[1]);
+                string str = "";
+                foreach(string s in variableList)
+                {
+                    str += s + " ";
+                }
+                Global.LogReport(str);
             }
 
             //Create the compiled line, and add 6 to it (the command number for creating/setting variables)
