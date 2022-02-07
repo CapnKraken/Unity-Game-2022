@@ -33,6 +33,7 @@ public class Bullet : PoolableObject
     #region Activate and Deactivate from pool
     protected override void OnActivate()
     {
+        
     }
 
     protected override void OnDeactivate()
@@ -71,7 +72,10 @@ public class Bullet : PoolableObject
 
     public override void OnNotify(Category category, string message, string senderData)
     {
-        
+        if(message == "PlayerHit")
+        {
+            GameManager.Instance.objectPool.ReturnObjectToPool(this.tag, this);
+        }
     }
 
     public override string GetLoggingData()

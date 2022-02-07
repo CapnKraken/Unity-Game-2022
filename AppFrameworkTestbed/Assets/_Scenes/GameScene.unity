@@ -197,7 +197,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 495950334}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.82, y: -0.65, z: 0}
+  m_LocalPosition: {x: 0, y: -4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1754371992}
@@ -220,6 +220,7 @@ MonoBehaviour:
   excludeTick: 0
   speeds: {x: 5, y: 3}
   hitbox: {fileID: 495950338}
+  respawnPosition: {x: 0, y: -4}
 --- !u!114 &495950338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,7 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db22fa0f04b3b2f488c86cd69bea426d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 0.3
+  radius: 0.1
   offset: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
@@ -539,7 +540,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 799073524}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.2288203, y: -4.158187, z: 19.627163}
+  m_LocalPosition: {x: -2.22882, y: -4.158187, z: 19.627163}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 992554098}
@@ -592,7 +593,7 @@ MonoBehaviour:
   pools:
   - tag: Bullet
     prefab: {fileID: 7103236390982215331, guid: d3742f36bd432524694836e6d126bf79, type: 3}
-    size: 50
+    size: 1000
 --- !u!1 &992554097
 GameObject:
   m_ObjectHideFlags: 0

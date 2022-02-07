@@ -19,6 +19,8 @@ public class Player : ManagedObject
     /// </summary>
     public HitCircle hitbox;
 
+    public Vector2 respawnPosition;
+
     #region Initialize
     protected override void Initialize()
     {
@@ -91,7 +93,7 @@ public class Player : ManagedObject
         Notify(Category.Audio, "PlaySound PlayerHit");
 
         //respawn at 0, 0
-        transform.localPosition = new Vector3(0, 0, 0);
+        transform.localPosition = new Vector3(respawnPosition.x, respawnPosition.y, 0);
     }
 
     public override string GetLoggingData()

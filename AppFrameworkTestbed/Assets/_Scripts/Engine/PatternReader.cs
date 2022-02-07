@@ -263,10 +263,85 @@ public class PatternReader : ManagedObject
                 else
                 {
                     //set the variable to the number
-                    Global.LogReport($"Variables.Count: {variables.Count}\nSplitAction[1]: {action.splitAction[1]}");
+                    //Global.LogReport($"Variables.Count: {variables.Count}\nSplitAction[1]: {action.splitAction[1]}");
                     variables[(int)action.splitAction[1]] = givenNumber;
                 }
 
+                break;
+            case 7: //random number
+                float min;
+                if (action.splitAction[2] == 1)
+                {
+                    //set the number to the value of the variable
+                    min = variables[(int)action.splitAction[3]];
+                }
+                else //if not, set the value directly
+                {
+                    min = action.splitAction[3];
+                }
+                //TODO: Clean up this code and the compiler code by making methods to determine whether or not variables are involved.
+                float max;
+                if (action.splitAction[4] == 1)
+                {
+                    //set the number to the value of the variable
+                    max = variables[(int)action.splitAction[5]];
+                }
+                else //if not, set the value directly
+                {
+                    max = action.splitAction[5];
+                }
+
+                variables[(int)action.splitAction[1]] = Random.Range(min, max);
+                break;
+            case 8: //point at player
+                float initX, initY;
+
+                float loc;
+                if (action.splitAction[2] == 1)
+                {
+                    //set the number to the value of the variable
+                    loc = variables[(int)action.splitAction[3]];
+                }
+                else //if not, set the value directly
+                {
+                    loc = action.splitAction[3];
+                }
+
+                //X pos
+                if (action.splitAction[4] == 1)
+                {
+                    //set the number to the value of the variable
+                    initX = variables[(int)action.splitAction[5]];
+                }
+                else //if not, set the value directly
+                {
+                    initX = action.splitAction[5];
+                }
+
+                //Y pos
+                if (action.splitAction[6] == 1)
+                {
+                    //set the number to the value of the variable
+                    initY = variables[(int)action.splitAction[7]];
+                }
+                else //if not, set the value directly
+                {
+                    initY = action.splitAction[7];
+                }
+
+                //0 = relative to self, 1 = relative to world
+                if(loc == 0)
+                {
+                    initX += transform.position.x;
+                    initY += transform.position.y;
+                }
+                else
+                {
+                    initX += GameManager.Instance.screenParent.position.x;
+                    initY += GameManager.Instance.screenParent.position.y;
+                }
+
+                variables[(int)action.splitAction[1]] = Global.PointTowards(new Vector3(initX, initY, 0), GameManager.Instance.player.transform.position);
                 break;
             default: break;
         }

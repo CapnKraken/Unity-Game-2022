@@ -1,6 +1,41 @@
 // include the standard library
 INCLUDE stdlib.txt
 
+Repeat 1000
+	
+	ResetVars
+
+	Repeat 10
+
+		AngleToPlayer direction location 0 0
+		Set whip = 3
+		Set whipIncrement = 1
+		Set speed = 3
+
+		Shoot
+
+		Wait 0.4
+
+	EndRepeat
+
+	ResetVars
+
+	Repeat 20
+		Random direction 0.0 360.0
+		Set burst = 5
+		Random speed 2.1 5.5
+
+		Shoot
+
+		Wait 0.1
+	EndRepeat
+
+EndRepeat
+
+
+
+
+IGNORE
 Set direction = 0
 
 Repeat 5
@@ -11,6 +46,10 @@ Repeat 5
 	Set whip = 1
 	
 	Wait 0.5
+
+	Set min = 0.0
+	Random direction min 360.0
+
 
 	Repeat 5
 		
@@ -36,3 +75,5 @@ Repeat 5
 
 	EndRepeat
 EndRepeat
+ENDIGNORE
+

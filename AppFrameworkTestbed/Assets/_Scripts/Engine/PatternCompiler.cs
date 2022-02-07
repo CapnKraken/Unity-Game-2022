@@ -80,6 +80,8 @@ public class PatternCompiler
         {
             //Declare and initialize the stream reader.
             StreamReader sr = new StreamReader(Application.dataPath + "/" + filePath);
+            //TextAsset t = Resources.Load<TextAsset>(filePath);
+            //StreamReader sr = new StreamReader(t.text);
 
             //keep track of line number for error finding
             int lineNum = 0;
@@ -321,12 +323,14 @@ public class PatternCompiler
 
                 //create a new variable
                 variableList.Add(splitLine[1]);
-                string str = "";
-                foreach(string s in variableList)
-                {
-                    str += s + " ";
-                }
-                Global.LogReport(str);
+                #region PrintVarList
+                //string str = "";
+                //foreach(string s in variableList)
+                //{
+                //    str += s + " ";
+                //}
+                //Global.LogReport(str);
+                #endregion
             }
 
             //Create the compiled line, and add 6 to it (the command number for creating/setting variables)
@@ -380,6 +384,100 @@ public class PatternCompiler
             actionList.Add(new Action(parsedLine));
 
         }
+        else if(actionID == 7) //Generate random number in a range
+        {
+            List<float> parsedLine = new List<float>();
+            parsedLine.Add(7);
+
+            //If the variable doesn't exist, throw an error
+            if (!variableList.Contains(splitLine[1]))
+            {
+                ThrowError("Variable not recognized.", lineNum);
+                return;
+            }
+
+            //add the variable to set
+            parsedLine.Add(variableList.IndexOf(splitLine[1]));
+
+            //Minimum value
+            if (variableList.Contains(splitLine[2])) //true if the number is a variable
+            {
+                parsedLine.Add(1); //1 means the following number is a variable index
+                parsedLine.Add(variableList.IndexOf(splitLine[2]));
+            }
+            else
+            {
+                parsedLine.Add(0); //0 means that the number is not a variable
+                parsedLine.Add(float.Parse(splitLine[2]));
+            }
+
+            //Maximum value
+            if (variableList.Contains(splitLine[3])) //true if the number is a variable
+            {
+                parsedLine.Add(1); //1 means the following number is a variable index
+                parsedLine.Add(variableList.IndexOf(splitLine[3]));
+            }
+            else
+            {
+                parsedLine.Add(0); //0 means that the number is not a variable
+                parsedLine.Add(float.Parse(splitLine[3]));
+            }
+
+            actionList.Add(new Action(parsedLine));
+        }
+        else if(actionID == 8) //point a variable at the player
+        {
+            List<float> parsedLine = new List<float>();
+            parsedLine.Add(8);
+
+            //If the variable doesn't exist, throw an error
+            if (!variableList.Contains(splitLine[1]))
+            {
+                ThrowError("Variable not recognized.", lineNum);
+                return;
+            }
+
+            //add the variable to set
+            parsedLine.Add(variableList.IndexOf(splitLine[1]));
+
+            //Location
+            if (variableList.Contains(splitLine[2])) //true if the number is a variable
+            {
+                parsedLine.Add(1); //1 means the following number is a variable index
+                parsedLine.Add(variableList.IndexOf(splitLine[2]));
+            }
+            else
+            {
+                parsedLine.Add(0); //0 means that the number is not a variable
+                parsedLine.Add(float.Parse(splitLine[2]));
+            }
+
+            //X position
+            if (variableList.Contains(splitLine[3])) //true if the number is a variable
+            {
+                parsedLine.Add(1); //1 means the following number is a variable index
+                parsedLine.Add(variableList.IndexOf(splitLine[3]));
+            }
+            else
+            {
+                parsedLine.Add(0); //0 means that the number is not a variable
+                parsedLine.Add(float.Parse(splitLine[3]));
+            }
+
+            //Y position
+            if (variableList.Contains(splitLine[4])) //true if the number is a variable
+            {
+                parsedLine.Add(1); //1 means the following number is a variable index
+                parsedLine.Add(variableList.IndexOf(splitLine[4]));
+            }
+            else
+            {
+                parsedLine.Add(0); //0 means that the number is not a variable
+                parsedLine.Add(float.Parse(splitLine[4]));
+            }
+
+            actionList.Add(new Action(parsedLine));
+        }
         else if (actionID != -1) //-1 is the ignore ID. For comments, empty lines, etc.
         {
             List<float> parsedLine = new List<float>();
@@ -424,6 +522,8 @@ public class PatternCompiler
             case "endrepeat": return 3;
             case "log": return 4;
             case "set": return 6; //set or create a variable
+            case "random": return 7; //sets a variable to a random number within a range
+            case "angletoplayer": return 8; //sets a variable to the angle between given coordinates and the player
             case "//": return -1;//Comment or empty line. Signal to ignore
             case "": return -1;
             case "endignore": return -1;

@@ -10,29 +10,6 @@ Set yPos = 0
 // Function to shoot
 // Must define function variables before the define directive
 
-IGNORE
-
-	Shoot function: needs burst amount, whip amount, spread, whip curve, whip increment, spread distance
-
-	start
-		set initdirection to direction
-		set internal speed to speed
-		set internal direction to initdirection
-
-		Repeat whip
-			
-			repeat burst
-				internal direction around
-				shoot
-			end
-			speed += increment
-			internaldirection += curve
-		end
-
-		
-
-ENDIGNORE
-
 Set burst = 1
 Set spread = 1
 Set spreadDistance = 0
@@ -65,6 +42,23 @@ Define Shoot
 		Set shoot_direction + whipCurve
 		Set shoot_speed + whipIncrement
 	EndRepeat
+EndFunction
+
+Define ResetVars
+	// Basic bullet variables
+	Set speed = 0
+	Set direction = 0
+	Set location = 0
+	Set xPos = 0
+	Set yPos = 0
+
+	// Shooting variables
+	Set burst = 1
+	Set spread = 1
+	Set spreadDistance = 0
+	Set whip = 1
+	Set whipIncrement = 0
+	Set whipCurve = 0
 EndFunction
 
 // End of file
