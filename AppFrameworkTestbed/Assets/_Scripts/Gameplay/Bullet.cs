@@ -20,6 +20,7 @@ public class Bullet : PoolableObject
     {
         this.speed = speed;
         this.direction = direction;
+        transform.rotation = Quaternion.Euler(0, 0, direction);
     }
     public void SetType(int type)
     {

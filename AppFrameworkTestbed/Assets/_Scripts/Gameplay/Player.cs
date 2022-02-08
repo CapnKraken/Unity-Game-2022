@@ -21,6 +21,8 @@ public class Player : ManagedObject
 
     public Vector2 respawnPosition;
 
+    public Vector2 upperBound, lowerBound;
+
     #region Initialize
     protected override void Initialize()
     {
@@ -77,6 +79,9 @@ public class Player : ManagedObject
         }
 
         Global.MoveObject(transform, movement);
+
+        //make sure player isn't offscreen
+        ClampPosition(lowerBound, upperBound);
         #endregion
 
         #region Test for Enemy Hit
@@ -94,6 +99,22 @@ public class Player : ManagedObject
 
         //respawn at 0, 0
         transform.localPosition = new Vector3(respawnPosition.x, respawnPosition.y, 0);
+    }
+
+    /// <summary>
+    /// Makes sure the player's transform.position is within certain bounds
+    /// </summary>
+    private void ClampPosition(Vector2 LowerBound, Vector2 UpperBound)
+    {
+        Vector3 tempPos = transform.localPosition;
+
+        if (tempPos.x > UpperBound.x) tempPos.x = UpperBound.x;
+        if (tempPos.y > UpperBound.y) tempPos.y = UpperBound.y;
+
+        if (tempPos.x < LowerBound.x) tempPos.x = LowerBound.x;
+        if (tempPos.y < LowerBound.y) tempPos.y = LowerBound.y;
+
+        transform.localPosition = tempPos;
     }
 
     public override string GetLoggingData()
