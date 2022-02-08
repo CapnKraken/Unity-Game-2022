@@ -247,6 +247,9 @@ public class PatternCompiler
             //direction
             AddPotentialVariable(splitLine, parsedLine, 5);
 
+            //type
+            AddPotentialVariable(splitLine, parsedLine, 6);
+
             //add the action
             actionList.Add(new Action(parsedLine));
         }

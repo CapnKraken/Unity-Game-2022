@@ -12,12 +12,10 @@ Bullet
 	-direction, speed
 	-moves in the direction, at the speed, until it's out of the bounding box, then deletes
 
-	Need:
-		sprite
-			int- refers to a global list of bullet sprites
-		radius
-			sets the radius of the bullet. This will also be a global list and tied to the type
-		--both of these will be worked on in the pattern files by a type parameter of spawn
+WILL NEED
+	how to guide detailing how to use all of the functionality I've built
+		pattern programming guide
+		how to use gamemanager, managed object, hitcircle
 
 	
 

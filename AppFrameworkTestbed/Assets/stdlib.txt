@@ -50,7 +50,7 @@ Define Shoot
 
 			Repeat spread
 
-				spawn location xPos yPos shoot_speed shoot_direction
+				spawn location xPos yPos shoot_speed shoot_direction type
 
 				Set shoot_direction + spreadDistance
 

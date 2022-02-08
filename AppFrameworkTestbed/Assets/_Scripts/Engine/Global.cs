@@ -115,6 +115,9 @@ public static class Global
 
     #region Bullet Pattern Storage
     public static Dictionary<string, List<Action>> patternDictionary;
+
+    public static List<Sprite> bulletSprites;
+    public static List<float> bulletRadii;
     #endregion
 }
 

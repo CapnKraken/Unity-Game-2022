@@ -13,10 +13,18 @@ public class Bullet : PoolableObject
     /// </summary>
     private HitCircle hitCircle;
 
+    //The bullet's sprite renderer
+    private SpriteRenderer spriteRenderer;
+
     public void SetStats(float speed, float direction)
     {
         this.speed = speed;
         this.direction = direction;
+    }
+    public void SetType(int type)
+    {
+        hitCircle.radius = Global.bulletRadii[type];
+        spriteRenderer.sprite = Global.bulletSprites[type];
     }
 
     #region Initialize
@@ -24,8 +32,9 @@ public class Bullet : PoolableObject
     {
         //Bullets exist relative to the camera position
         transform.parent = GameManager.Instance.screenParent;
+
         hitCircle = GetComponent<HitCircle>();
-        
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
     #endregion
 

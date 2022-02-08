@@ -125,7 +125,10 @@ public class PatternReader : ManagedObject
                 float speed = GetValueFromPotentialVariable(action.splitAction, 7);
                 float direction = GetValueFromPotentialVariable(action.splitAction, 9);
 
-                Notify(Category.Shooting, $"Shoot {xPosition + xOffset} {yPosition + yOffset} {speed} {direction}");
+                //get type
+                int type = (int)GetValueFromPotentialVariable(action.splitAction, 11);
+
+                Notify(Category.Shooting, $"Shoot {xPosition + xOffset} {yPosition + yOffset} {speed} {direction} {type}");
                 //Global.LogReport("Shooting");
                 break;
             case 2: //REPEAT

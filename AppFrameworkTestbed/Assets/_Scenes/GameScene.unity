@@ -380,6 +380,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   relevantCategories: 02000000
   excludeTick: 0
+  bulletData:
+  - sprite: {fileID: 21300000, guid: 3686bbdef1030404595608fe3e46e871, type: 3}
+    radius: 0.05
+  - sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    radius: 1
 --- !u!1 &573084115
 GameObject:
   m_ObjectHideFlags: 0

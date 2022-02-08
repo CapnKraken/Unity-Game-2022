@@ -49,7 +49,12 @@ Repeat 1000
 		Set speed = 4
 		Set spread = 15
 		Set spreadDistance = 5
+		Set type = 0
 
+		Shoot
+
+		Wait 1
+		Set type = 1
 		Shoot
 
 		Wait 1
