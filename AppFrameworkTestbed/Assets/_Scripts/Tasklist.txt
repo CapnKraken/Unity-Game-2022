@@ -12,19 +12,12 @@ Bullet
 	-direction, speed
 	-moves in the direction, at the speed, until it's out of the bounding box, then deletes
 
-Bullet pattern system
-	
-	Have global class which stores the compiled pattern files. When an enemy is spawned, it can grab the one it needs from that
-
-	IMPLEMENTATION:
-		
-	Next to do: 
-		random number
-			Random {variable name} {min inclusive} {max inclusive}
-
-		direction from position to player
-
-			AngleToPlayer {variable name} {location} {x} {y}
+	Need:
+		sprite
+			int- refers to a global list of bullet sprites
+		radius
+			sets the radius of the bullet. This will also be a global list and tied to the type
+		--both of these will be worked on in the pattern files by a type parameter of spawn
 
 	
 

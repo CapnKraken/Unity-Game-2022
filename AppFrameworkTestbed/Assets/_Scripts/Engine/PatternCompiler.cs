@@ -233,64 +233,19 @@ public class PatternCompiler
             parsedLine.Add(1);
 
             //Add the location
-            if (variableList.Contains(splitLine[1]))
-            {
-                parsedLine.Add(1);
-                parsedLine.Add(variableList.IndexOf(splitLine[1]));
-            }
-            else
-            {
-                parsedLine.Add(0);
-                parsedLine.Add(int.Parse(splitLine[1]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 1);
 
             //x coordinate
-            if (variableList.Contains(splitLine[2]))
-            {
-                parsedLine.Add(1);
-                parsedLine.Add(variableList.IndexOf(splitLine[2]));
-            }
-            else
-            {
-                parsedLine.Add(0);
-                parsedLine.Add(float.Parse(splitLine[2]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 2);
 
             //y coordinate
-            if (variableList.Contains(splitLine[3]))
-            {
-                parsedLine.Add(1);
-                parsedLine.Add(variableList.IndexOf(splitLine[3]));
-            }
-            else
-            {
-                parsedLine.Add(0);
-                parsedLine.Add(float.Parse(splitLine[3]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 3);
 
             //speed
-            if (variableList.Contains(splitLine[4]))
-            {
-                parsedLine.Add(1);
-                parsedLine.Add(variableList.IndexOf(splitLine[4]));
-            }
-            else
-            {
-                parsedLine.Add(0);
-                parsedLine.Add(float.Parse(splitLine[4]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 4);
 
             //direction
-            if (variableList.Contains(splitLine[5]))
-            {
-                parsedLine.Add(1);
-                parsedLine.Add(variableList.IndexOf(splitLine[5]));
-            }
-            else
-            {
-                parsedLine.Add(0);
-                parsedLine.Add(float.Parse(splitLine[5]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 5);
 
             //add the action
             actionList.Add(new Action(parsedLine));
@@ -368,17 +323,7 @@ public class PatternCompiler
                 parsedLine.Add(0); // no operator, this is the space it would be in       
             }
 
-            //check if the number to modify the variable by is a variable itself
-            if (variableList.Contains(splitLine[3]))
-            {
-                parsedLine.Add(1); //signify that it's a variable to follow
-                parsedLine.Add(variableList.IndexOf(splitLine[3])); //add the variable index
-            }
-            else
-            {
-                parsedLine.Add(0); //signify no variable
-                parsedLine.Add(float.Parse(splitLine[3]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 3);
 
             //add the action
             actionList.Add(new Action(parsedLine));
@@ -400,28 +345,10 @@ public class PatternCompiler
             parsedLine.Add(variableList.IndexOf(splitLine[1]));
 
             //Minimum value
-            if (variableList.Contains(splitLine[2])) //true if the number is a variable
-            {
-                parsedLine.Add(1); //1 means the following number is a variable index
-                parsedLine.Add(variableList.IndexOf(splitLine[2]));
-            }
-            else
-            {
-                parsedLine.Add(0); //0 means that the number is not a variable
-                parsedLine.Add(float.Parse(splitLine[2]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 2);
 
             //Maximum value
-            if (variableList.Contains(splitLine[3])) //true if the number is a variable
-            {
-                parsedLine.Add(1); //1 means the following number is a variable index
-                parsedLine.Add(variableList.IndexOf(splitLine[3]));
-            }
-            else
-            {
-                parsedLine.Add(0); //0 means that the number is not a variable
-                parsedLine.Add(float.Parse(splitLine[3]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 3);
 
             actionList.Add(new Action(parsedLine));
         }
@@ -441,40 +368,13 @@ public class PatternCompiler
             parsedLine.Add(variableList.IndexOf(splitLine[1]));
 
             //Location
-            if (variableList.Contains(splitLine[2])) //true if the number is a variable
-            {
-                parsedLine.Add(1); //1 means the following number is a variable index
-                parsedLine.Add(variableList.IndexOf(splitLine[2]));
-            }
-            else
-            {
-                parsedLine.Add(0); //0 means that the number is not a variable
-                parsedLine.Add(float.Parse(splitLine[2]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 2);
 
             //X position
-            if (variableList.Contains(splitLine[3])) //true if the number is a variable
-            {
-                parsedLine.Add(1); //1 means the following number is a variable index
-                parsedLine.Add(variableList.IndexOf(splitLine[3]));
-            }
-            else
-            {
-                parsedLine.Add(0); //0 means that the number is not a variable
-                parsedLine.Add(float.Parse(splitLine[3]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 3);
 
             //Y position
-            if (variableList.Contains(splitLine[4])) //true if the number is a variable
-            {
-                parsedLine.Add(1); //1 means the following number is a variable index
-                parsedLine.Add(variableList.IndexOf(splitLine[4]));
-            }
-            else
-            {
-                parsedLine.Add(0); //0 means that the number is not a variable
-                parsedLine.Add(float.Parse(splitLine[4]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 4);
 
             actionList.Add(new Action(parsedLine));
         }
@@ -493,16 +393,7 @@ public class PatternCompiler
                 return;
             }
 
-            if(variableList.Contains(splitLine[1])) //true if the number is a variable
-            {
-                parsedLine.Add(1); //1 means the following number is a variable index
-                parsedLine.Add(variableList.IndexOf(splitLine[1]));
-            }
-            else
-            {
-                parsedLine.Add(0); //0 means that the number is not a variable
-                parsedLine.Add(float.Parse(splitLine[1]));
-            }
+            AddPotentialVariable(splitLine, parsedLine, 1);
 
             //Add the action struct
             actionList.Add(new Action(parsedLine));
@@ -556,6 +447,38 @@ public class PatternCompiler
         }
 
         return false;
+    }
+
+    /*
+     //check if the number to modify the variable by is a variable itself
+            if (variableList.Contains(splitLine[3]))
+            {
+                parsedLine.Add(1); //signify that it's a variable to follow
+                parsedLine.Add(variableList.IndexOf(splitLine[3])); //add the variable index
+            }
+            else
+            {
+                parsedLine.Add(0); //signify no variable
+                parsedLine.Add(float.Parse(splitLine[3]));
+            }
+     */
+
+    /// <summary>
+    /// Adds a number that may or not be a variable to an action.
+    /// </summary>
+    /// <param name="valueIndex">The index in the split line that has the number.</param>
+    private void AddPotentialVariable(string[] splitLine, List<float> parsedLine, int valueIndex)
+    {
+        if (variableList.Contains(splitLine[valueIndex]))
+        {
+            parsedLine.Add(1); //signify that it's a variable to follow
+            parsedLine.Add(variableList.IndexOf(splitLine[valueIndex])); //add the variable index
+        }
+        else
+        {
+            parsedLine.Add(0); //signify no variable
+            parsedLine.Add(float.Parse(splitLine[valueIndex]));
+        }
     }
 
     #endregion //compiler

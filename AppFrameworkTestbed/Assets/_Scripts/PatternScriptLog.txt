@@ -4,10 +4,17 @@ Implemented:
 
 	Commands
 		Wait x seconds
-		Shoot (generic command, doesn't do anything, no modifiers)
+		Spawn location x y speed direction
 
 	Repeating
 	Cluster definition
+	Include directive
+
+	Variables
+		Creating
+		Assigning
+		Basic arithmetic
+		Using variables in place of numbers
 
 Not Implemented
 
@@ -24,9 +31,3 @@ Not Implemented
 	Cluster definitions
 		Parameters
 
-	Variables
-		Replace numbers
-		Arithmetic
-
-	Include Directive
-		Like in C++, copy another file into the compilation

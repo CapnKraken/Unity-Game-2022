@@ -1,9 +1,10 @@
 // STANDARD BULLET LIBRARY
 
 // Basic bullet variables
-Set speed = 0
+Set speed = 1
 Set direction = 0
 Set location = 0
+Set type = 0
 Set xPos = 0
 Set yPos = 0
 
@@ -22,6 +23,8 @@ Set whipCurve = 0
 	Set shoot_direction = 0
 	Set shoot_bIncrement = 0
 	Set shoot_speed = 0
+	Set shoot_spreadMin = 0
+	Set shoot_spreadInitDirection = 0
 
 // Shoot function
 
@@ -35,7 +38,28 @@ Define Shoot
 	Repeat whip
 
 		Repeat burst
-			spawn location xPos yPos shoot_speed shoot_direction
+			// preliminary math for bullet spread
+			Set shoot_spreadInitDirection = shoot_direction
+
+			Set shoot_spreadMin = spread
+			Set shoot_spreadMin - 1
+			Set shoot_spreadMin * spreadDistance
+			Set shoot_spreadMin / 2.0
+
+			Set shoot_direction - shoot_spreadMin
+
+			Repeat spread
+
+				spawn location xPos yPos shoot_speed shoot_direction
+
+				Set shoot_direction + spreadDistance
+
+			EndRepeat
+
+			// reset direction
+			Set shoot_direction = shoot_spreadInitDirection
+
+			// rotate for burst
 			Set shoot_direction + shoot_bIncrement
 		EndRepeat
 

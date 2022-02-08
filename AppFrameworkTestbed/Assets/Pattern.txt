@@ -1,33 +1,71 @@
 // include the standard library
 INCLUDE stdlib.txt
 
+// double border of wave and particle pattern
+
+// variables
+set p_leftdirection = 0
+set p_rightdirection = 0
+set p_rotationspeed = 0
+
+Define BorderWaveParticle
+ResetVars
+
+	set p_leftdirection = 90
+	set p_rightdirection = 90
+	set p_rotationspeed = 0
+
+	set speed = 6
+	set burst = 2
+
+	Repeat 200
+
+		set direction = p_leftdirection
+		set xPos = 2
+		Shoot
+
+		set direction = p_rightdirection
+		set xPos = -2
+		Shoot
+
+		set p_leftdirection + p_rotationspeed
+		set p_rightdirection - p_rotationspeed
+		set p_rotationspeed + 0.7
+		Wait 0.05
+
+	EndRepeat
+EndFunction
+
 Repeat 1000
 	
+	// BorderWaveParticle
+
 	ResetVars
 
-	Repeat 10
+	Repeat 100
 
 		AngleToPlayer direction location 0 0
-		Set whip = 3
-		Set whipIncrement = 1
-		Set speed = 3
+		Set burst = 1
+		Set speed = 4
+		Set spread = 15
+		Set spreadDistance = 5
 
 		Shoot
 
-		Wait 0.4
+		Wait 1
 
 	EndRepeat
 
 	ResetVars
 
-	Repeat 20
+	Repeat 5
 		Random direction 0.0 360.0
-		Set burst = 5
+		Set burst = 15
 		Random speed 2.1 5.5
 
 		Shoot
 
-		Wait 0.1
+		Wait 1
 	EndRepeat
 
 EndRepeat
