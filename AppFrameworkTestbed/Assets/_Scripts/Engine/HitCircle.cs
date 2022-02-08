@@ -36,9 +36,10 @@ public class HitCircle : MonoBehaviour
     {
         //get the opposite and adjacent sides for our triangle
         Vector3 difference = (other.transform.position + other.GetRotatedOffset()) - (transform.position + GetRotatedOffset());
+        float hyp = this.radius + other.radius;
 
         //use pythagorean theorem to determine whether or not the two circles are touching
-        bool result = this.radius + other.radius > (difference.x * difference.x + difference.y * difference.y);
+        bool result = hyp * hyp > (difference.x * difference.x + difference.y * difference.y);
 
         return result;
     }

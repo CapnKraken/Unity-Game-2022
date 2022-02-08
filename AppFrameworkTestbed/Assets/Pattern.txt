@@ -1,70 +1,135 @@
-log starting
+// include the standard library
+INCLUDE stdlib.txt
 
-// Defining clusters
+// double border of wave and particle pattern
 
-define Zap
-	repeat 5
-		shoot 1
-		wait 0.2
-		shoot 2
-		wait 0.4
-	endrepeat
+// variables
+set p_leftdirection = 0
+set p_rightdirection = 0
+set p_rotationspeed = 0
+
+Define BorderWaveParticle
+ResetVars
+
+	set p_leftdirection = 90
+	set p_rightdirection = 90
+	set p_rotationspeed = 0
+
+	set speed = 5
+	set burst = 2
+	set type = 3
+
+	Repeat 200
+
+		set direction = p_leftdirection
+		set xPos = 2
+		Shoot
+
+		set direction = p_rightdirection
+		set xPos = -2
+		Shoot
+
+		set p_leftdirection + p_rotationspeed
+		set p_rightdirection - p_rotationspeed
+		set p_rotationspeed + 0.3
+		Wait 0.03
+
+	EndRepeat
+EndFunction
+
+Repeat 1000
 	
-	shoot 5
-endcluster
+	BorderWaveParticle
 
-// Start here
+	Wait 1
 
-wait 2
-shoot
-shoot
-wait 2
+	ResetVars
 
-repeat 2
-	wait 5
+	Repeat 10
 
-	log Calling Zap Cluster
-	call Zap
+		AngleToPlayer direction location 0 0
+		Set burst = 1
+		Set speed = 4
+		Set spread = 15
+		Set spreadDistance = 5
+		Set type = 1
 
-	wait 3
+		Shoot
 
-	repeat 4
-		shoot
-		wait .1
-	endrepeat
-endrepeat
+		Set spread = 1
+		Set speed = 5
+		Set type = 0
 
-log ending
+		Shoot
+
+		Wait 0.6
+
+	EndRepeat
+
+	ResetVars
+
+	Wait 1
+
+	Set type = 2
+	Repeat 20
+		Random direction 0.0 360.0
+		Set burst = 15
+		Random whip 1 4
+		Set whipIncrement = 1
+		Random whipCurve -40.0 40.0
+		Random speed 0.5 3.3
+
+		Shoot
+
+		Wait 0.3
+	EndRepeat
+
+	Wait 1
+
+EndRepeat
+
+
+
 
 IGNORE
+Set direction = 0
+
+Repeat 5
+	
+	Set xPos = 0
+	Set speed = 1
+	Set burst = 5
+	Set whip = 1
+	
+	Wait 0.5
+
+	Set min = 0.0
+	Random direction min 360.0
 
 
-{storage for clusters}
-//length of cluster
-5
-{5 instructions}
+	Repeat 5
+		
+		Shoot
+		Set direction + 10
+		Set speed + 1.5
 
-{storage for main instructions}
+		Wait 0.2
 
-OR
+	EndRepeat
 
-{storage for main instructions}
-//clusters compiled directly into the list of instructions
+	Set whipIncrement = 1
+	Set speed = 1
+	Set direction = -90
+	
+	Repeat 3
+		Set burst = 1
+		Set whip = 4
+		Shoot
 
+		Set whipIncrement + 1
+		Wait 1
 
-
-So the pattern.txt will look like
-
-{cluster definitions}
-
-{main instructions}
-
-but the compiled list will just be
-
-{instructions}
-
-
-
-
-
+	EndRepeat
+EndRepeat
 ENDIGNORE
+

@@ -12,61 +12,12 @@ Bullet
 	-direction, speed
 	-moves in the direction, at the speed, until it's out of the bounding box, then deletes
 
-Bullet pattern system
+WILL NEED
+	how to guide detailing how to use all of the functionality I've built
+		pattern programming guide
+		how to use gamemanager, managed object, hitcircle
+
 	
-	Have global class which stores the compiled pattern files. When an enemy is spawned, it can grab the one it needs from that
-
-	IMPLEMENTATION:
-		Commands: always "action value action value" since they're all numbers. The actions will be ints
-		
-		
-
-	Input file- 1 command per line
-	Output (read by program)
-		Array of actions stored as strings
-		for instance:
-			"0 4.6" is equal to "Wait 4.6" in the file
-		
-	Reading
-		Timer variable, ticks down per frame if greater than 0
-		If timer == 0, do action at current index, otherwise, hold on
-			split string
-		If index == length, set index to 0
-
-	SYSTEM REQUIREMENTS
-		I want to be able to not have to type in every number every time I call the shoot command
-			//Something like
-			Shoot Burst 4 Speed 10
-			Wait 0.2
-			Shoot Speed 15
-
-			//This would shoot a 4-burst with speed of 10, wait .2 seconds, then shoot a 4-burst with speed of 15
-
-			So: have a struct to store current bullet modifier values
-				When there's a command like "Burst 10", adjust that modifier value
-		EVEN BETTER:
-			I want everything to be able to be a variable
-			So, burst is a variable, whip is a variable, speed is a variable
-			Method parameters have a default variable that they can defer to
-			so
-				type 1
-				// this 
-				define Shoot t b s w
-					default t type
-					default b burst 5
-					default s speed 5
-					default w whip 1
-					// This will initialize and set values
-				endcluster
-
-			Include files at top
-			So I can have a kind of base file that sets up basic stuff for me but it's versatile
-
-			Such as: 
-
-			Include BasePatterns
-
-			Burst 5
 
 
 

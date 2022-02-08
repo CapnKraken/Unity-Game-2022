@@ -5,188 +5,83 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+#region Action Struct
+
+public struct Action
+{
+    //list to store the action
+    public List<float> splitAction;
+
+    //The length of the list
+    public int length;
+
+    public Action(List<float> splitAction)
+    {
+        this.splitAction = splitAction;
+        this.length = splitAction.Count;
+    }
+
+    public override string ToString()
+    {
+        string s = "{";
+        foreach (float f in splitAction)
+        {
+            s += $"[{f}]";
+        }
+        s += "}";
+        return s;
+    }
+}
+
+
+#endregion //action struct
+
 //Attach to whatever is in charge of compiling the patterns when the game/level starts
 
-//Eventually, move the thing that runs the compiled pattern to a seperate component
-
-public class PatternCompiler : NotifiableObj, iTickable
+public class PatternCompiler
 {
-    /// <summary>
-    /// The list of commands/actions that the program reads.
-    /// </summary>
-    private List<Action> patternData;
-
-    #region Timer and Iterator
-
-    /// <summary>
-    /// The program will wait if this is greater than 0.
-    /// </summary>
-    private int waitTimer;
-
-    /// <summary>
-    /// The variable that iterates through the action list. <br/>
-    /// Use it to tell you which line the program is on.
-    /// </summary>
-    private int actionIterator;
-
-    #endregion
-
-    #region Repeater Stack and Struct
-
-    private Stack<Repeater> repeaterStack;
-    /// <summary>
-    /// Struct to store 2 ints: A repeat counter and a line number representing where to jump back to.
-    /// </summary>
-    private struct Repeater
-    {
-        public int repeats, lineNumber;
-        public Repeater(int repeats, int lineNumber)
-        {
-            this.repeats = repeats;
-            this.lineNumber = lineNumber;
-        }
-    }
-
-    #endregion
-
-    /// <summary>
-    /// What the bullet script uses to debug log.
-    /// </summary>
-    private List<string> logs;
-
-    #region Update
-    public void Tick()
-    {
-        if (patternData.Count == 0) return;
-
-        if(waitTimer == 0)
-        {
-            //In a dowhile so it can run multiple commands per frame, if there's no wait in between
-            do
-            {
-                //Execute the action
-                DoAction(patternData[actionIterator]);
-                actionIterator++;
-
-                //Wrap actionIterator if it exceeds the list length
-                if (actionIterator >= patternData.Count) actionIterator = 0;
-            }
-            while (waitTimer == 0);
-        }
-        else
-        {
-            //Count down if it's waiting.
-            waitTimer--;
-        }
-    }
-#endregion
-
-    #region Do Action
-    /// <summary>
-    /// Perform an action.
-    /// </summary>
-    private void DoAction(Action action)
-    {
-        //First number in splitAction should be an int
-        switch ((int)action.splitAction[0])
-        {
-            case 0: //WAIT
-                //Convert seconds to frames
-                Global.LogReport($"Waiting {action.splitAction[1]} seconds.");
-                waitTimer = (int)(action.splitAction[1] * 60);
-                break;
-            case 1: //SHOOT
-                //Notify(Category.Shooting, "Shoot");
-                Global.LogReport("Shooting");
-                break;
-            case 2: //REPEAT
-                {
-                    //Add a new repeater struct to the stack
-                    Repeater temp1 = new Repeater((int)action.splitAction[1], actionIterator);
-                    repeaterStack.Push(temp1);
-
-                    Global.LogReport($"Repeating {temp1.repeats} times.");
-                    break;
-                }
-            case 3: //ENDREPEAT
-                {
-                    Repeater temp2 = repeaterStack.Pop();
-                    temp2.repeats--;
-
-                    //if r.repeats == 0, then the program will continue
-                    if (temp2.repeats > 0)
-                    {
-                        //Set the actionIterator to point to the start of the repeat
-                        actionIterator = temp2.lineNumber;
-
-                        Global.LogReport($"Repeating {temp2.repeats} more times.");
-
-                        //push it back onto the stack
-                        repeaterStack.Push(temp2);
-                    }
-                    break;
-                }
-            case 4:
-                {
-                    Global.LogReport(logs[(int)action.splitAction[1]]);
-                }
-                break;
-            default:break;
-        }
-    }
-
-    #endregion
-
-    #region Initialize and Deinitialize
-    protected override void Initialize()
-    {
-        GameManager.Instance.AddTicker(this);
-
-        Compile("Pattern.txt");
-
-        //Initialize variables
-        waitTimer = 0;
-        actionIterator = 0;
-
-        //Initialize data structures
-        repeaterStack = new Stack<Repeater>();
-    }
-
-    protected override void DeInitialize()
-    {
-        GameManager.Instance.RemoveTicker(this);
-    }
-
-    #endregion
-
-    #region Notifications
-    public override void OnNotify(Category category, string message, string senderData)
-    {
-        
-    }
-
-    public override string GetLoggingData()
-    {
-        return name;
-    }
-    #endregion
+    public PatternCompiler() { }
 
     #region Pattern Interpreter/Compiler
 
-    private void Compile(string filePath)
+    /// <summary>
+    /// Dictionary to store cluster information during compilation.
+    /// </summary>
+    private Dictionary<string, List<Action>> functionDictionary;
+
+    /// <summary>
+    /// List to store variable information during compilation.
+    /// </summary>
+    private List<string> variableList;
+
+    /// <summary>
+    /// Compile a pattern file and add it to the global pattern dictionary.
+    /// </summary>
+    /// <param name="filePath">The name of the file.</param>
+    public void AddPattern(string filePath)
+    {
+        functionDictionary = new Dictionary<string, List<Action>>();
+        variableList = new List<string>();
+
+        //Add the pattern to the dictionary
+        Global.patternDictionary.Add(filePath, Compile(filePath));
+    }
+
+    public List<Action> Compile(string filePath)
     {
         //Initialize lists
-        patternData = new List<Action>();
-        logs = new List<string>();
+        List<Action> patternData = new List<Action>();
 
-        //Create temporary dictionary to store cluster information
-        Dictionary<string, List<Action>> clusterDictionary = new Dictionary<string, List<Action>>();
+        // TODO: Re-Implement logs. Temporarily disabled. It's action type 4.
+        //logs = new List<string>();
 
         //Check if the file exists.
         if (File.Exists(Application.dataPath + "/" + filePath))
         {
             //Declare and initialize the stream reader.
             StreamReader sr = new StreamReader(Application.dataPath + "/" + filePath);
+            //TextAsset t = Resources.Load<TextAsset>(filePath);
+            //StreamReader sr = new StreamReader(t.text);
 
             //keep track of line number for error finding
             int lineNum = 0;
@@ -215,12 +110,29 @@ public class PatternCompiler : NotifiableObj, iTickable
                         while (splitLine[0].ToLower() != "endignore");
                     }
 
+                    //TODO: test include directive
+                    //Include another file in the compilation
+                    if(splitLine[0].ToLower() == "include")
+                    {
+                        
+                        List<Action> includedFile = Compile(splitLine[1]);
+                        patternData.AddRange(includedFile);
+
+                        //set up next line
+                        lineNum++;
+                        line = sr.ReadLine();
+                        line = line.Trim();
+
+                        splitLine = line.Split(' ');
+                    }
+
+                    //define a function
                     if(splitLine[0].ToLower() == "define")
                     {
                         string clusterName = splitLine[1];
 
                         //Add the cluster to the dictionary
-                        clusterDictionary.Add(clusterName, new List<Action>());
+                        functionDictionary.Add(clusterName, new List<Action>());
 
                         //Read until it reaches an endcluster command
                         lineNum++;
@@ -229,10 +141,12 @@ public class PatternCompiler : NotifiableObj, iTickable
 
                         splitLine = line.Split(' ');
 
-                        while (splitLine[0].ToLower() != "endcluster")
+                        //TODO: Bug: compilation error when file ends with endfunction
+
+                        while (splitLine[0].ToLower() != "endfunction")
                         {
                             //process the line into the cluster
-                            ProcessLine(splitLine, line, lineNum, clusterDictionary[clusterName], clusterDictionary);
+                            ProcessLine(splitLine, line, lineNum, functionDictionary[clusterName]);
 
                             lineNum++;
                             line = sr.ReadLine();
@@ -240,7 +154,7 @@ public class PatternCompiler : NotifiableObj, iTickable
 
                             splitLine = line.Split(' ');
                         }
-
+                        
                         lineNum++;
                         line = sr.ReadLine();
                         line = line.Trim();
@@ -248,15 +162,15 @@ public class PatternCompiler : NotifiableObj, iTickable
                         splitLine = line.Split(' ');
 
                         //Log the dictionary entry
-                        Global.LogReport($"Putting cluster {clusterName} in dictionary:\n" + ActionListToString(clusterDictionary[clusterName]));
+                        Global.LogReport($"Putting cluster {clusterName} in dictionary:\n" + ActionListToString(functionDictionary[clusterName]));
                     }
 
                     //process the line
-                    ProcessLine(splitLine, line, lineNum, patternData, clusterDictionary);
+                    ProcessLine(splitLine, line, lineNum, patternData);
                 }
                 catch(System.Exception e)
                 {
-                    ThrowError(e.ToString(), lineNum);
+                    ThrowError(e.ToString() + "\nFilename: " + filePath, lineNum);
                 }
             }
 
@@ -266,12 +180,14 @@ public class PatternCompiler : NotifiableObj, iTickable
             #region Compiled file log
             //Log the compiled file
             string s = ActionListToString(patternData);
-            Global.LogReport(s);
+            Global.LogReport($"Filename: {filePath}\nCompiled:\n{s}");
             #endregion
+            return patternData;
         }
         else
         {
             Global.LogReport($"File: {Application.dataPath + "/" + filePath} does not exist.");
+            return null;
         }
     }
 
@@ -295,7 +211,7 @@ public class PatternCompiler : NotifiableObj, iTickable
     /// <param name="lineNum">the current line number</param>
     /// <param name="actionList">the action list to modify</param>
     /// <param name="clusterDictionary">the dictionary storing the clusters</param>
-    private void ProcessLine(string[] splitLine, string line, int lineNum, List<Action> actionList, Dictionary<string, List<Action>> clusterDictionary)
+    private void ProcessLine(string[] splitLine, string line, int lineNum, List<Action> actionList)
     {
         //get the ID of the initial action
         int actionID = ActionStringToInt(splitLine[0]);
@@ -306,18 +222,164 @@ public class PatternCompiler : NotifiableObj, iTickable
             ThrowError("Compile error. Check file.", lineNum);
             return;
         }
+        else if(actionID == 1) //spawn a bullet
+        {
+            //model bullet command:
+            //1 0 0 0 0 0 10 0 0 //every other number signifies variable or not
+
+            List<float> parsedLine = new List<float>();
+
+            //Add the main action ID first
+            parsedLine.Add(1);
+
+            //Add the location
+            AddPotentialVariable(splitLine, parsedLine, 1);
+
+            //x coordinate
+            AddPotentialVariable(splitLine, parsedLine, 2);
+
+            //y coordinate
+            AddPotentialVariable(splitLine, parsedLine, 3);
+
+            //speed
+            AddPotentialVariable(splitLine, parsedLine, 4);
+
+            //direction
+            AddPotentialVariable(splitLine, parsedLine, 5);
+
+            //type
+            AddPotentialVariable(splitLine, parsedLine, 6);
+
+            //add the action
+            actionList.Add(new Action(parsedLine));
+        }
         else if (actionID == 4) //add logging data to the logs list
         {
             //current length of logs list is the index we'll find the log in
-            actionList.Add(new Action(new List<float>() { actionID, logs.Count }));
+            //actionList.Add(new Action(new List<float>() { actionID, logs.Count }));
 
             //substring is to remove "log" from the log
-            logs.Add(line.Substring(3));
+            //logs.Add(line.Substring(3));
         }
         else if(actionID == 5) //call a cluster
         {
             //insert cluster from the dictionary
-            actionList.AddRange(clusterDictionary[splitLine[1]]);
+            
+            actionList.AddRange(functionDictionary[splitLine[0]]);
+        }
+        //do work on a variable. Set, create, increment by
+        else if(actionID == 6) //set or create a variable
+        {
+            if (!variableList.Contains(splitLine[1]))
+            {
+                //If there's an operator, throw an error
+                if (IsOperator(splitLine[2]))
+                {
+                    ThrowError("Error: operator cannot be used in variable initialization", lineNum);
+                    return;
+                }
+
+                //create a new variable
+                variableList.Add(splitLine[1]);
+                #region PrintVarList
+                //string str = "";
+                //foreach(string s in variableList)
+                //{
+                //    str += s + " ";
+                //}
+                //Global.LogReport(str);
+                #endregion
+            }
+
+            //Create the compiled line, and add 6 to it (the command number for creating/setting variables)
+            List<float> parsedLine = new List<float>();
+            parsedLine.Add(6);
+            //Add the index of the variable to operate on
+            parsedLine.Add(variableList.IndexOf(splitLine[1]));
+
+            if (IsOperator(splitLine[2]))
+            {
+                parsedLine.Add(1); //1 signifies there is an operator
+                switch (splitLine[2])
+                {
+                    case "+":
+                        parsedLine.Add(0);
+                        break;
+                    case "-":
+                        parsedLine.Add(1);
+                        break;
+                    case "*":
+                        parsedLine.Add(2);
+                        break;
+                    case "/":
+                        parsedLine.Add(3);
+                        break;
+                    case "%":
+                        parsedLine.Add(4);
+                        break;
+                    default: break;
+                }
+            }
+            else
+            {
+                parsedLine.Add(0); //0 signifies no operator
+                parsedLine.Add(0); // no operator, this is the space it would be in       
+            }
+
+            AddPotentialVariable(splitLine, parsedLine, 3);
+
+            //add the action
+            actionList.Add(new Action(parsedLine));
+
+        }
+        else if(actionID == 7) //Generate random number in a range
+        {
+            List<float> parsedLine = new List<float>();
+            parsedLine.Add(7);
+
+            //If the variable doesn't exist, throw an error
+            if (!variableList.Contains(splitLine[1]))
+            {
+                ThrowError("Variable not recognized.", lineNum);
+                return;
+            }
+
+            //add the variable to set
+            parsedLine.Add(variableList.IndexOf(splitLine[1]));
+
+            //Minimum value
+            AddPotentialVariable(splitLine, parsedLine, 2);
+
+            //Maximum value
+            AddPotentialVariable(splitLine, parsedLine, 3);
+
+            actionList.Add(new Action(parsedLine));
+        }
+        else if(actionID == 8) //point a variable at the player
+        {
+            List<float> parsedLine = new List<float>();
+            parsedLine.Add(8);
+
+            //If the variable doesn't exist, throw an error
+            if (!variableList.Contains(splitLine[1]))
+            {
+                ThrowError("Variable not recognized.", lineNum);
+                return;
+            }
+
+            //add the variable to set
+            parsedLine.Add(variableList.IndexOf(splitLine[1]));
+
+            //Location
+            AddPotentialVariable(splitLine, parsedLine, 2);
+
+            //X position
+            AddPotentialVariable(splitLine, parsedLine, 3);
+
+            //Y position
+            AddPotentialVariable(splitLine, parsedLine, 4);
+
+            actionList.Add(new Action(parsedLine));
         }
         else if (actionID != -1) //-1 is the ignore ID. For comments, empty lines, etc.
         {
@@ -326,12 +388,15 @@ public class PatternCompiler : NotifiableObj, iTickable
             //Add the main action ID first
             parsedLine.Add(actionID);
 
-            //Convert to floats
-            for (int i = 1; i < splitLine.Length; i++)
+            //if it's a simple one-word thing, like endrepeat, go ahead and add it
+            if(splitLine.Length == 1)
             {
-                //Add all of the modifiers
-                parsedLine.Add(float.Parse(splitLine[i]));
+                //Add the action struct
+                actionList.Add(new Action(parsedLine));
+                return;
             }
+
+            AddPotentialVariable(splitLine, parsedLine, 1);
 
             //Add the action struct
             actionList.Add(new Action(parsedLine));
@@ -346,48 +411,78 @@ public class PatternCompiler : NotifiableObj, iTickable
         switch (actionString.ToLower())
         {
             case "wait": return 0;
-            case "shoot": return 1;
+            case "spawn": return 1;
             case "repeat": return 2;
             case "endrepeat": return 3;
             case "log": return 4;
-            case "call": return 5;
+            case "set": return 6; //set or create a variable
+            case "random": return 7; //sets a variable to a random number within a range
+            case "angletoplayer": return 8; //sets a variable to the angle between given coordinates and the player
             case "//": return -1;//Comment or empty line. Signal to ignore
             case "": return -1;
             case "endignore": return -1;
-            default: Global.LogReport($"String {actionString} not recognized."); return -2; //Error, unrecognized thing
+            default:
+                if (functionDictionary.ContainsKey(actionString))
+                {
+                    return 5; //call a function
+                }
+                else
+                {
+                    Global.LogReport($"String {actionString} not recognized.");
+                    return -2; //Error, unrecognized thing
+                }
         }
     }
 
-    #region Action Struct
-    
-    private struct Action
+    /// <summary>
+    /// Checks to see whether a given string is a mathematical operator.
+    /// </summary>
+    private bool IsOperator(string str)
     {
-        //list to store the action
-        public List<float> splitAction;
-
-        //The length of the list
-        public int length;
-
-        public Action(List<float> splitAction)
+        List<string> operators = new List<string>() 
         {
-            this.splitAction = splitAction;
-            this.length = splitAction.Count;
+            "+", "-", "*", "%", "/"
+        };
+
+        if (operators.Contains(str))
+        {
+            return true;
         }
 
-        public override string ToString()
-        {
-            string s = "{";
-            foreach(float f in splitAction)
-            {
-                s += $"[{f}]";
-            }
-            s += "}";
-            return s;
-        }
+        return false;
     }
 
+    /*
+     //check if the number to modify the variable by is a variable itself
+            if (variableList.Contains(splitLine[3]))
+            {
+                parsedLine.Add(1); //signify that it's a variable to follow
+                parsedLine.Add(variableList.IndexOf(splitLine[3])); //add the variable index
+            }
+            else
+            {
+                parsedLine.Add(0); //signify no variable
+                parsedLine.Add(float.Parse(splitLine[3]));
+            }
+     */
 
-    #endregion //action struct
+    /// <summary>
+    /// Adds a number that may or not be a variable to an action.
+    /// </summary>
+    /// <param name="valueIndex">The index in the split line that has the number.</param>
+    private void AddPotentialVariable(string[] splitLine, List<float> parsedLine, int valueIndex)
+    {
+        if (variableList.Contains(splitLine[valueIndex]))
+        {
+            parsedLine.Add(1); //signify that it's a variable to follow
+            parsedLine.Add(variableList.IndexOf(splitLine[valueIndex])); //add the variable index
+        }
+        else
+        {
+            parsedLine.Add(0); //signify no variable
+            parsedLine.Add(float.Parse(splitLine[valueIndex]));
+        }
+    }
 
     #endregion //compiler
 

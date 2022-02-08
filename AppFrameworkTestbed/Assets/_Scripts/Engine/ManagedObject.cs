@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// An object that can send and receive messages via the Messenger system.
+/// An object that can send and receive messages via the Messenger system, and runs in the GameManager's update method via the Tick method.
 /// </summary>
-public abstract class NotifiableObj : MonoBehaviour
+public abstract class ManagedObject : MonoBehaviour
 {
     //Contains abstract method OnNotify
     #region Communication with messenger
@@ -42,6 +42,21 @@ public abstract class NotifiableObj : MonoBehaviour
 
     #endregion
 
+    #region Tick
+    /// <summary>
+    /// Set this to true if you don't want GameManager to update it.
+    /// </summary>
+    public bool excludeTick = false;
+
+    /// <summary>
+    /// Use this instead of the Update method.
+    /// </summary>
+    public virtual void Tick()
+    {
+
+    }
+    #endregion
+
     //Contains abstract method Initialize
     #region Start and Destroy
 
@@ -52,12 +67,16 @@ public abstract class NotifiableObj : MonoBehaviour
 
         messenger.AddListener(this);
         Initialize();
+
+        GameManager.Instance.AddTicker(this);
     }
 
     public void OnDestroy()
     {
         messenger.RemoveListener(this);
         DeInitialize();
+
+        GameManager.Instance.RemoveTicker(this);
     }
 
     /// <summary>
@@ -70,7 +89,7 @@ public abstract class NotifiableObj : MonoBehaviour
     /// </summary>
     protected virtual void DeInitialize()
     {
-        Global.LogReport("De-initialized object " + name);
+        //Global.LogReport("De-initialized object " + name);
     }
 
     #endregion

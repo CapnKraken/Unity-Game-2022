@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 7612790480260323765}
   - component: {fileID: 8761163629219589129}
   - component: {fileID: 3120809877706966305}
+  - component: {fileID: 2168519866184227394}
   m_Layer: 0
   m_Name: Bullet
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -72,9 +73,9 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 835194463
   m_SortingLayer: 1
-  m_SortingOrder: 1
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.96101236, g: 0, b: 1, a: 1}
+  m_SortingOrder: 5
+  m_Sprite: {fileID: 874343242196921964, guid: 35f457a4dc780174c89e1a68517f5180, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -96,5 +97,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db22fa0f04b3b2f488c86cd69bea426d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 0.3
+  radius: 0.15
   offset: {x: 0, y: 0, z: 0}
+--- !u!114 &2168519866184227394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7103236390982215331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb1270b3953250844b47d0bfc9d266fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  relevantCategories: 
+  excludeTick: 0
+  speed: 0
+  direction: 0
+  upperBound: {x: 6, y: 6}
+  lowerBound: {x: -6, y: -6}

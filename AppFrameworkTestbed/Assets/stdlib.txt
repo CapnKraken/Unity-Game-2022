@@ -1,0 +1,88 @@
+// STANDARD BULLET LIBRARY
+
+// Basic bullet variables
+Set speed = 1
+Set direction = 0
+Set location = 0
+Set type = 0
+Set xPos = 0
+Set yPos = 0
+
+// Function to shoot
+// Must define function variables before the define directive
+
+Set burst = 1
+Set spread = 1
+Set spreadDistance = 0
+Set whip = 1
+Set whipIncrement = 0
+Set whipCurve = 0
+
+// internal variables for shoot function
+
+	Set shoot_direction = 0
+	Set shoot_bIncrement = 0
+	Set shoot_speed = 0
+	Set shoot_spreadMin = 0
+	Set shoot_spreadInitDirection = 0
+
+// Shoot function
+
+Define Shoot
+	Set shoot_direction = direction
+	Set shoot_speed = speed
+
+	Set shoot_bIncrement = 360
+	Set shoot_bIncrement / burst
+
+	Repeat whip
+
+		Repeat burst
+			// preliminary math for bullet spread
+			Set shoot_spreadInitDirection = shoot_direction
+
+			Set shoot_spreadMin = spread
+			Set shoot_spreadMin - 1
+			Set shoot_spreadMin * spreadDistance
+			Set shoot_spreadMin / 2.0
+
+			Set shoot_direction - shoot_spreadMin
+
+			Repeat spread
+
+				spawn location xPos yPos shoot_speed shoot_direction type
+
+				Set shoot_direction + spreadDistance
+
+			EndRepeat
+
+			// reset direction
+			Set shoot_direction = shoot_spreadInitDirection
+
+			// rotate for burst
+			Set shoot_direction + shoot_bIncrement
+		EndRepeat
+
+		Set shoot_direction + whipCurve
+		Set shoot_speed + whipIncrement
+	EndRepeat
+EndFunction
+
+Define ResetVars
+	// Basic bullet variables
+	Set speed = 0
+	Set direction = 0
+	Set location = 0
+	Set xPos = 0
+	Set yPos = 0
+
+	// Shooting variables
+	Set burst = 1
+	Set spread = 1
+	Set spreadDistance = 0
+	Set whip = 1
+	Set whipIncrement = 0
+	Set whipCurve = 0
+EndFunction
+
+// End of file

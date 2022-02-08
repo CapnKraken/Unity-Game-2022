@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CamAssemblyController : MonoBehaviour, iTickable
+public class CamAssemblyController : ManagedObject
 {
     [Tooltip("X = Movement speed\nY = Rotation speed")]
     /// <summary>
@@ -15,16 +15,13 @@ public class CamAssemblyController : MonoBehaviour, iTickable
     /// </summary>
     public Vector2 speeds;
 
-    private void Start()
+    #region Initialize and DeInitialize
+    protected override void Initialize()
     {
-        GameManager.Instance.AddTicker(this);
+   
     }
-
-    private void OnDestroy()
-    {
-        GameManager.Instance.RemoveTicker(this);
-    }
-    public void Tick()
+    #endregion
+    public override void Tick()
     {
         #region Get Inputs
         bool[] inputs = new bool[]
@@ -65,5 +62,14 @@ public class CamAssemblyController : MonoBehaviour, iTickable
 
         #endregion
         
+    }
+
+    public override string GetLoggingData()
+    {
+        return "This is the cam controller.";
+    }
+
+    public override void OnNotify(Category category, string message, string senderData)
+    {
     }
 }

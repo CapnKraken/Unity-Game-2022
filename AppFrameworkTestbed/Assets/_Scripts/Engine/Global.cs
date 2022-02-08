@@ -1,5 +1,6 @@
 ﻿//Matthew Watson
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// A class to store useful methods that many objects need to use.
@@ -110,6 +111,13 @@ public static class Global
             return 0;
         }
     }
+    #endregion
+
+    #region Bullet Pattern Storage
+    public static Dictionary<string, List<Action>> patternDictionary;
+
+    public static List<Sprite> bulletSprites;
+    public static List<float> bulletRadii;
     #endregion
 }
 

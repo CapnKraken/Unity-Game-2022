@@ -13,7 +13,7 @@ public class Messenger
     /// <summary>
     /// The list of notifiable objects listening for notifications.
     /// </summary>
-    private List<NotifiableObj> listeners;
+    private List<ManagedObject> listeners;
 
     /// <summary>
     /// A queue to which all notifications are added.
@@ -27,7 +27,7 @@ public class Messenger
     public Messenger()
     {
         //Initialize the objects list
-        listeners = new List<NotifiableObj>();
+        listeners = new List<ManagedObject>();
 
         //Initialize the message queue
         messageQueue = new Queue<Notification>();
@@ -52,7 +52,7 @@ public class Messenger
     /// <summary>
     /// Add listener to the list.
     /// </summary>
-    public void AddListener(NotifiableObj listener)
+    public void AddListener(ManagedObject listener)
     {
         listeners.Add(listener);
     }
@@ -60,7 +60,7 @@ public class Messenger
     /// <summary>
     /// Remove listener from the list.
     /// </summary>
-    public void RemoveListener(NotifiableObj listener)
+    public void RemoveListener(ManagedObject listener)
     {
         listeners.Remove(listener);
     }
@@ -75,7 +75,7 @@ public class Messenger
             //create an instance of the struct
             Notification n = messageQueue.Dequeue();
 
-            foreach (NotifiableObj obj in listeners)
+            foreach (ManagedObject obj in listeners)
             {
                 //Notify each object if the message pertains to them. GENERAL messages will be sent to every object.
                 if (obj.relevantCategories.Contains(n.category) || n.category == Category.GENERAL)
@@ -105,7 +105,7 @@ public class Messenger
         }
 
         //Notify the object of the message.
-        public void NotifyObject(NotifiableObj recipient)
+        public void NotifyObject(ManagedObject recipient)
         {
             recipient.OnNotify(category, message, senderData);
         }
